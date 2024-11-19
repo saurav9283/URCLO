@@ -24,7 +24,7 @@ exports.sendEmail = async function ({ from, to, subject, template, data }) {
         const html = await ejs.renderFile(path.join(path.dirname(__dirname), 'templates', template), data);
 
         await transporter.verify();
-        await transporter.sendMail({ from, to, subject, html });
+         await transporter.sendMail({ from, to, subject, html });
 
         console.log('Email sent successfully');
 
