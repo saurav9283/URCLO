@@ -1,8 +1,12 @@
 const bcrypt = require('bcrypt');
-const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify, checkRegisteredUserWithPhone } = require('../userAuth/auth.service');
+const crypto = require('crypto');
+const moment = require('moment');
+const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify, checkRegisteredUserWithPhone, OtpVerifyPhone, OtpForLogin, findTokenInDatabase, updatePassword, findUserById } = require('../userAuth/auth.service');
 const { sendEmail } = require('../../services/email-service');
 const { sendSms } = require('../../services/sms-service');
-const { verifyGoogleToken } = require('../../services/oAuth');
+const jwt = require('jsonwebtoken');
+const { encryptToken, decryptToken } = require('../../lib/decodetoken');
+const { saveResetToken } = require('../../lib/saveToken');
 
 module.exports = {
     register: async (req, res) => {
@@ -53,7 +57,11 @@ module.exports = {
             }
 
             // Hash the password
-            const hashedPassword = await bcrypt.hash(password, 10);
+            let hashedPassword;
+            if (password) {
+
+                hashedPassword = await bcrypt.hash(password, 10);
+            }
             const otp = Math.floor(100000 + Math.random() * 900000);
 
             let userProvider;
@@ -233,5 +241,149 @@ module.exports = {
         });
         return res.status(200).json({ msg: "OTP re-sent successfully" });
 
+    },
+    login: async (req, res) => {
+        try {
+            const { email, password, phone, otp } = req.body;
+            console.log('req.body: ', req.body);
+            if (!phone) {
+                if (!email || !password) {
+                    return res.status(400).json({ msg: "Email and password are required" });
+                }
+            }
+            if (phone) {
+                // if(!otp)
+                // {
+                //     return res.status(400).json({ msg: "Phone and OTP are required" });
+                // }
+                const user = await new Promise((resolve, reject) => {
+                    getUserByPhone(phone, (err, result) => {
+                        if (err) {
+                            console.error("Error getting user:", err);
+                            return reject(err);
+                        }
+                        console.log(result.length, "result.length")
+                        resolve(result && result.length > 0 ? result[0] : null);
+                    });
+                });
+                console.log(user, "=-=")
+                if (!user) {
+                    return res.status(404).json({ msg: "User not found" });
+                }
+                if (!user.isVerified) {
+                    return res.status(400).json({ msg: "Your phone number is not verified" });
+                }
+                const newotp = Math.floor(100000 + Math.random() * 900000);
+
+                const newPlayload = {
+                    phone: phone,
+                    otp: newotp,
+                }
+                console.log(newPlayload)
+                OtpForLogin(newPlayload, (err, result) => {
+                    if (err) {
+                        console.error("Error saving user:", err);
+                        return res.status(500).json({ msg: "Internal server error" });
+                    }
+                    else {
+                        return res.status(200).json({ msg: "OTP sent successfully" });
+                    }
+
+                })
+
+            }
+            else {
+                const user = await new Promise((resolve, reject) => {
+                    getUserByEmail(email, (err, result) => {
+                        if (err) return reject(err);
+                        resolve(result && result.length > 0 ? result[0] : null);
+                    });
+                });
+
+                if (!user) {
+                    return res.status(404).json({ msg: "User notttt found" });
+                }
+                if (!user.isVerified) {
+                    return res.status(400).json({ msg: "Your email ID is not verified" });
+                }
+                const passwordMatch = await bcrypt.compare(password, user.password);
+                if (!passwordMatch) {
+                    return res.status(400).json({ msg: "Invalid password" });
+                }
+                return res.status(200).json({ msg: "Login successful" });
+            }
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return res.status(500).json({ msg: "Internal server error" });
+        }
+    },
+    forgotPassword: async (req, res) => {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ msg: "Email is required" });
+        }
+        const user = await new Promise((resolve, reject) => {
+            getUserByEmail(email, (err, result) => {
+                if (err) return reject(err);
+                resolve(result && result.length > 0 ? result[0] : null);
+            });
+        });
+        console.log('user: ', user);
+        if (!user) {
+            return res.status(404).json({ msg: "You are not registered with this email yet!" });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        console.log('resetToken: ', resetToken);
+        const tokenExpiry = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss');
+        const iat = moment().unix();
+
+        const tokenPayload = {
+            resetToken: resetToken,
+            email: email,
+            expiry: tokenExpiry,
+            iat: iat,
+            userId: user.id,
+        }
+        // console.log(process.env.JWT_SECRET_KEY, "process")
+        const jwtToken = jwt.sign(tokenPayload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+        const resetLink = `http://localhost:3000/reset-password?token=${encodeURIComponent(jwtToken)}`;
+
+        const payload = {
+            from: process.env.MAIL_SENDER_EMAIL,
+            to: user.email,
+            subject: '[URCLO] Password Reset E-mail',
+            template: `forgotpassword.ejs`,
+            data: {
+                name: user.name,
+                resetLink,
+            },
+        };
+        const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+
+        // console.log(payload, "payload=-=-");
+        await saveResetToken(user.id, jwtToken, tokenExpiry, iat, currentDateTime);
+        await sendEmail(payload);
+        return res.status(200).json({ msg: "Password reset link sent successfully" });
+    },
+    resetPassword: async (req, res) => {
+        const { token } = req.query;
+        const { password } = req.body;
+
+        if (!token || !password) {
+            return res.status(400).json({ msg: "Token and new password are required." });
+        }
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+            console.log('Decoded Token:', decoded);
+            const { email, userId } = decoded;
+            console.log('userId: ', userId);
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await updatePassword(userId, hashedPassword);
+            return res.status(200).json({ msg: "Password reset successful" });
+        } catch (error) {
+            console.log('error: ', error);
+            return res.status(500).json({ msg: "Internal server error" });
+        }
     },
 };

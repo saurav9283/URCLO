@@ -24,10 +24,38 @@ module.exports = {
             return callback(null, result);
         });
     },
+    OtpForLogin: (user, callback) => {
+
+        const getuser = process.env.getid_for_phone.replace('<phone>', user.phone);
+        console.log('getuser: ', getuser);
+        pool.query(getuser, (err, result) => {
+            if (err) {
+                console.error("Error retrieving user ID:", err);
+                return callback(err);
+            }
+            const dbuser = result[0];
+            console.log('user: ', user);
+            const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+            const otpExpires = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss');
+            const updateuser = process.env.UPDATE_USER.replace('<id>', dbuser.id)
+                .replace('<otp>', user.otp).replace('<otpExpires>', otpExpires)
+                .replace('<createdon>', currentDateTime);
+            console.log('updateuser: ', updateuser);
+            pool.query(updateuser, (err, result) => {
+                if (err) {
+                    console.error("Error updating user:", err);
+                    return callback(err);
+                }
+                return callback(null, "Otp sent successfully on registered Number");
+            });
+        });
+    },
     saveUser: async (newUser, callback) => {
+        console.log('newUser: ', newUser);
         if (newUser.phone) {
 
             try {
+                console.log("-=-=-=")
                 await sendSms(newUser.phone, `Your OTP for registration is ${newUser.otp}`);
             } catch (error) {
                 console.error("Error sending email:", error.message);
@@ -57,8 +85,7 @@ module.exports = {
         const otpExpires = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss');
 
         let checkVerifyUser = 0;
-        if(newUser.provider === 'Google')
-        {
+        if (newUser.provider === 'Google') {
             checkVerifyUser = 1;
         }
 
@@ -79,7 +106,8 @@ module.exports = {
                 console.error("Error saving user:", err);
                 return callback(err);
             }
-            return callback(null, "Otp sent successfully on registered email");
+            return callback(null, `Otp sent successfully on registered ${newUser.phone ? 'Number' : 'email'}`);
+            // return callback(null, "Otp sent successfully on registered email");
         });
     },
     checkRegisteredUser: async (newUser, callback) => {
@@ -155,8 +183,8 @@ module.exports = {
         });
     },
     OtpVerifyPhone: (user, callback) => {
-        const getid_for_phone = process.env.GETID.replace('<phone>', user.phone);
-        console.log('getid: ', getid);
+        const getid_for_phone = process.env.getid_for_phone.replace('<phone>', user.phone);
+        console.log('getid_for_phone: ', getid_for_phone);
 
         pool.query(getid_for_phone, (err, result) => {
             if (err) {
@@ -242,4 +270,43 @@ module.exports = {
             return callback(error);
         }
     },
+    findUserById: (id, callback) => {
+        const query = process.env.FINDUSERBYID.replace('<id>', id);
+        pool.query(query, (err, result) => {
+            if (err) {
+                console.error("Error finding user by ID:", err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+    },
+    updatePassword : (userId, newPassword) => {
+        return new Promise((resolve, reject) => {
+            console.log('userId: ', userId);
+            const GETTid = process.env.GETTid.replace('<id>', userId);
+            console.log('GETTid: ', GETTid);
+
+            pool.query(GETTid, (err, result) => {
+                if (err) {
+                    console.error("Error retrieving user ID:", err);
+                    return reject(err);
+                }
+
+                const user = result[0];
+                console.log('user: ', user);
+                const updatePasswordQuery = process.env.UPDATE_PASSWORD
+                    .replace('<id>', user.id)
+                    .replace('<password>', newPassword); // Use newPassword here
+
+                pool.query(updatePasswordQuery, (err, result) => {
+                    if (err) {
+                        console.error("Error updating user:", err);
+                        return reject(err);
+                    }
+                    return resolve("Password updated successfully");
+                });
+            });
+        });
+    }
+
 }
