@@ -8,6 +8,7 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const UserRouter = require('./routes/userAuth/auth.router.js');
+const ProviderRouter = require('./routes/providerAuth/providerAuth.router.js');
 
 var app = express();
 
@@ -24,6 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/user-auth', UserRouter);
+app.use('/api/provider-auth', ProviderRouter);
 
 app.get('/api', (req, res) => {
   res.send("Api is working fine")
