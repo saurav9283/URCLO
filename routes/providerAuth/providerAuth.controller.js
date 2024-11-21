@@ -1,4 +1,4 @@
-const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvider } = require("./providerAuth.service");
+const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvider, UpdateOTP, UpdateOTPBy_Number } = require("./providerAuth.service");
 const bcrypt = require("bcrypt");
 module.exports = {
     providerRegister: async (req, res) => {
@@ -37,7 +37,7 @@ module.exports = {
                 DOB,
                 servicename,
                 phone,
-                email,
+                email ,
                 address,
                 availableTime,
                 documentNumber,
@@ -114,6 +114,68 @@ module.exports = {
                 return res.status(500).json({ message: "Internal Server Error" });
             }
             return res.status(200).json({ message: "Phone number verified successfully" });
+        });
+    },
+    providerOtpResend: async (req, res) => {
+        const { email, phone } = req.body;
+            
+        if (email) {
+            const provider = await new Promise((resolve, reject) => {
+                getProviderByEmail(email, (err, result) => {
+                    if (err) reject(err);
+                    resolve(result && result[0]);
+                });
+            });
+            if (!provider) {
+                return res.status(404).json({ message: "Email not registered" });
+            }
+            if (provider.isVerified ==  0) {
+                return res.status(400).json({ message: "verify email first" });
+            }
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            provider.otp = otp;
+            UpdateOTP(provider, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({ message: "Internal Server Error" });
+                }
+                return res.status(200).json({ message: "OTP re-sent successfully" });
+            });
+        }
+        if (phone) {
+            const provider = await new Promise((resolve, reject) => {
+                getProviderByPhone(phone, (err, result) => {
+                    if (err) reject(err);
+                    resolve(result && result[0]);
+                });
+            });
+            if (!provider) {
+                return res.status(404).json({ message: "Phone number not registered" });
+            }
+            if (provider.isVerified) {
+                return res.status(400).json({ message: "Phone number is already verified" });
+            }
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            provider.otp = otp;
+            UpdateOTPBy_Number(provider, (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({ message: "Internal Server Error" });
+                }
+                return res.status(200).json({ message: "OTP re-sent successfully" });
+            });
+        }
+    },
+    providerLogin: async (req, res) => {
+        const {phone, email,password} = req.body;
+        if (!phone && !email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const provider = await new Promise((resolve, reject) => {
+            getProviderByEmail(email, (err, result) => {
+                if (err) reject(err);
+                resolve(result && result[0]);
+            });
         });
     }
 }

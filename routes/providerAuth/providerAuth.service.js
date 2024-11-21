@@ -62,8 +62,8 @@ module.exports = {
             .replace('<age>', newProvider.age)
             .replace('<DOB>', newProvider.DOB)
             .replace('<servicename>', newProvider.servicename)
-            .replace('<phone>', newProvider.phone)
-            .replace('<email>', newProvider.email)
+            .replace('<phone>', newProvider.phone ? newProvider.phone : null)
+            .replace('<email>', newProvider.email ? newProvider.email : null)
             .replace('<address>', newProvider.address)
             .replace('<availableTime>', newProvider.availableTime)
             .replace('<documentNumber>', newProvider.documentNumber)
@@ -97,7 +97,7 @@ module.exports = {
             console.log('providerId: ', providerId);
 
             const updateProvider = process.env.UPDATE_PROVIDER.replace('<providerId>', providerId)
-            .replace('<isVerified>', provider.isVerified);
+                .replace('<isVerified>', provider.isVerified);
             console.log('updateProvider: ', updateProvider);
 
             pool.query(updateProvider, (err, result) => {
@@ -109,4 +109,78 @@ module.exports = {
             });
         });
     },
+    UpdateOTP: async (provider, callback) => {
+        if (provider.email) {
+            sendEmail({
+                from: process.env.MAIL_SENDER_EMAIL,
+                to: provider.email,
+                subject: 'OTP for registration',
+                template: `emailotp.ejs`,
+                data: {
+                    name: provider.name,
+                    otp: provider.otp,
+                },
+            });
+            const getproviderId = process.env.GET_PROVIDERID.replace('<email>', provider.email);
+            console.log('getproviderId: ', getproviderId);
+
+            pool.query(getproviderId, (err, result) => {
+                if (err) {
+                    console.error("Error getting provider id:", err);
+                    return callback(err);
+                }
+                const providerId = result[0].id;
+                console.log('providerId: ', providerId);
+
+                const otpExpires = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss');
+
+                const updateProvider = process.env.UPDATE_OTP.replace('<providerId>', providerId)
+                    .replace('<otp>', provider.otp)
+                    .replace('<otpExpires>', otpExpires)
+                console.log('updateProvider: ', updateProvider);
+
+                pool.query(updateProvider, (err, result) => {
+                    if (err) {
+                        console.error("Error updating provider:", err);
+                        return callback(err);
+                    }
+                    return callback(null, "OTP re-sent successfully");
+                });
+            });
+        }
+        else if (provider.phone) {
+            const getproviderId = process.env.GET_PROVIDERID.replace('<phone>', provider.phone);
+            console.log('getproviderId: ', getproviderId);
+
+        }
+    },
+    UpdateOTPBy_Number: async (provider, callback) => {
+        sendSms(provider.phone, `Your OTP for registration is ${provider.otp}`);
+        const getproviderId = process.env.GET_PROVIDERID_PHONE.replace('<phone>', provider.phone);
+        console.log('getproviderId: ', getproviderId);
+
+        pool.query(getproviderId, (err, result) => {
+            if (err) {
+                console.error("Error getting provider id:", err);
+                return callback(err);
+            }
+            const providerId = result[0].id;
+            console.log('providerId: ', providerId);
+
+            const otpExpires = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss');
+
+            const updateProvider = process.env.UPDATE_OTP.replace('<providerId>', providerId)
+                .replace('<otp>', provider.otp)
+                .replace('<otpExpires>', otpExpires)
+            console.log('updateProvider: ', updateProvider);
+
+            pool.query(updateProvider, (err, result) => {
+                if (err) {
+                    console.error("Error updating provider:", err);
+                    return callback(err);
+                }
+                return callback(null, "OTP re-sent successfully");
+            });
+        });
+    }
 }
