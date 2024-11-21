@@ -182,5 +182,33 @@ module.exports = {
                 return callback(null, "OTP re-sent successfully");
             });
         });
+    },
+    updateProviderPassword: (provider, newPassword) => {
+        return new Promise((resolve, reject) => {
+            console.log('provider: ', provider);
+            const GETTid = process.env.GET_PROVIDER_ID.replace('<id>', provider);
+            console.log('GETTid: ', GETTid);
+
+            pool.query(GETTid, (err, result) => {
+                if (err) {
+                    console.error("Error retrieving user ID:", err);
+                    return reject(err);
+                }
+
+                const user = result[0];
+                console.log('user: ', user);
+                const updatePasswordQuery = process.env.UPDATE_PASSWORD_PROVIDER
+                    .replace('<id>', user.id)
+                    .replace('<password>', newPassword); // Use newPassword here
+
+                pool.query(updatePasswordQuery, (err, result) => {
+                    if (err) {
+                        console.error("Error updating user:", err);
+                        return reject(err);
+                    }
+                    return resolve("Password updated successfully");
+                });
+            });
+        });
     }
 }
