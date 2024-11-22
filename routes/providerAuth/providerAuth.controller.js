@@ -9,9 +9,12 @@ const { sendEmail } = require("../../services/email-service");
 module.exports = {
     providerRegister: async (req, res) => {
         try {
-            const { name, email, age, DOB, password, servicename, phone, address, availableTime, documentNumber, documentType } = req.body;
-            if (!name || !age || !DOB || !password || !servicename || !address || !availableTime || !documentNumber || !documentType) {
+            const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType } = req.body;
+            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType) {
                 return res.status(400).json({ message: "All fields are required" });
+            }
+            if (age < 18 || age > 60) {
+                return res.status(400).json({ message: "You are not Authorised to work us." });
             }
             // Check if email is already registered
             const emailExists = await new Promise((resolve, reject) => {
@@ -41,7 +44,9 @@ module.exports = {
                 name,
                 age,
                 DOB,
-                servicename,
+                masterId,
+                cat_id,
+                sub_cat_id,
                 phone,
                 email,
                 address,
@@ -265,10 +270,10 @@ module.exports = {
         const { token } = req.query;
         const { password } = req.body;
 
-        if (!token ) {
+        if (!token) {
             return res.status(400).json({ msg: "Something wrong" });
         }
-        if(!password){
+        if (!password) {
             return res.status(400).json({ msg: "Password is required" });
         }
         try {
