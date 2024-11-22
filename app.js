@@ -10,6 +10,7 @@ var usersRouter = require('./routes/users');
 const bodyParser = require('body-parser');
 // const UserRouter = require('./routes/userAuth/auth.router.js');
 const UserRouter = require('./routes/User/userAuth/auth.router.js');
+const UserCartRouter = require('./routes/User/UserCart/user.cart.router.js');
 // const ProviderRouter = require('./routes/providerAuth/providerAuth.router.js');
 const ProviderRouter = require('./routes/Provider/providerAuth/providerAuth.router.js');
 
@@ -29,7 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api/user-auth', UserRouter);
-// app.use('/api/checkout/cart' , UserCartRouter);
+app.use('/api/checkout/cart' , UserCartRouter);
 app.use('/api/provider-auth', ProviderRouter);
 
 app.get('/api', (req, res) => {
