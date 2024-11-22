@@ -24,68 +24,64 @@ module.exports = {
             return callback(null, result);
         });
     },
-    saveProvider: async (newProvider, callback) => {
-        if (newProvider?.phone) {
-            try {
-                console.log("-=-=-=")
-                await sendSms(newProvider.phone, `Your OTP for registration is ${newProvider.otp}`);
-            } catch (error) {
-                console.error("Error sending email:", error.message);
-                return callback(error);
+    saveProvider: async (providerData, serviceData, callback) => {
+        try {
+            const { name, email, phone, otp } = providerData;
+
+            // Send OTP via SMS and Email
+            if (phone) {
+                await sendSms(phone, `Your OTP for registration is ${otp}`);
             }
+            if (email) {
+                const emailPayload = {
+                    from: process.env.MAIL_SENDER_EMAIL,
+                    to: email,
+                    subject: 'OTP for Registration',
+                    template: 'emailotp.ejs',
+                    data: { name, otp },
+                };
+                await sendEmail(emailPayload);
+            }
+
+            // Insert into `providers` table
+            const providerQuery = process.env.PROVIDER_DETAILS;
+            const providerValues = [
+                providerData.name, providerData.email, providerData.age, providerData.DOB, providerData.phone,
+                providerData.address, providerData.documentNumber, providerData.documentType, providerData.password,
+                providerData.otp, providerData.otpExpires, providerData.createdOn, providerData.isVerified,
+            ];
+
+            pool.query(providerQuery, providerValues, (err, result) => {
+                if (err) {
+                    console.error("Error saving provider data:", err.message);
+                    return callback(err);
+                }
+
+                const providerId = result.insertId;
+                console.log('providerId: ', providerId);
+
+                // Insert into `provider_services` table
+                const serviceQuery =  process.env.PROVIDER_SERVICE_DETAILS;
+                const serviceValues = [
+                    providerId, serviceData.masterId, serviceData.cat_id, serviceData.sub_cat_id,
+                    JSON.stringify(serviceData.availableTime), serviceData.price,
+                    JSON.stringify(serviceData.images)
+                ];
+
+                pool.query(serviceQuery, serviceValues, (err, result) => {
+                    if (err) {
+                        console.error("Error saving service data:", err.message);
+                        return callback(err);
+                    }
+                    callback(null, "Data saved successfully.");
+                });
+            });
+        } catch (error) {
+            console.error("Error:", error.message);
+            callback(error);
         }
-        if (newProvider.email) {
-            const payload = {
-                from: process.env.MAIL_SENDER_EMAIL,
-                to: newProvider.email,
-                subject: 'OTP for registration',
-                template: `emailotp.ejs`,
-                data: {
-                    name: newProvider.name,
-                    otp: newProvider.otp,
-                },
-            }
-            console.log(payload, "payload=-=-")
-            try {
-                await sendEmail(payload);
-            } catch (error) {
-                console.error("Error sending email:", error.message);
-                return res.status(500).json({ msg: "Failed to send OTP email. Registration aborted." });
-            }
-        }
-        const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        const otpExpires = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss');
-
-        let checkVerifyUser = 0;
-        const query = process.env.SAVE_PROVIDER
-            .replace('<name>', newProvider.name)
-            .replace('<age>', newProvider.age)
-            .replace('<DOB>', newProvider.DOB)
-            .replace('<masterId>', newProvider.masterId)
-            .replace('<cat_id>' , newProvider.cat_id)
-            .replace('<sub_cat_id>' , newProvider.subcat_id)
-            .replace('<phone>', newProvider.phone ? newProvider.phone : null)
-            .replace('<email>', newProvider.email ? newProvider.email : null)
-            .replace('<address>', newProvider.address)
-            .replace('<availableTime>', newProvider.availableTime)
-            .replace('<documentNumber>', newProvider.documentNumber)
-            .replace('<documentType>', newProvider.documentType)
-            .replace('<password>', newProvider.password)
-            .replace('<otp>', newProvider.otp)
-            .replace('<otpExpires>', otpExpires)
-            .replace('<createdon>', currentDateTime)
-            .replace('<isVerified>', checkVerifyUser);
-
-        console.log(query, "query=-=-")
-        pool.query(query, (err, result) => {
-            if (err) {
-                console.error("Error saving user:", err);
-                return callback(err);
-            }
-            return callback(null, `OTP sent to your registered  email or phone number`);
-        });
-
     },
+
     UpdateVerifyProvider: async (provider, callback) => {
         const getproviderId = process.env.GET_PROVIDERID.replace('<email>', provider.email);
         console.log('getproviderId: ', getproviderId);
