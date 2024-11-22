@@ -8,10 +8,8 @@ const { saveResetTokenProvider } = require("../../lib/SaveTokenProvider");
 const { sendEmail } = require("../../services/email-service");
 module.exports = {
     providerRegister: async (req, res) => {
-        console.log("enter here...")
         try {
             const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,images } = req.body;
-            console.log(' req.body: ',  req.body);
 
             if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price) {
                 return res.status(400).json({ message: "All fields are required" });
