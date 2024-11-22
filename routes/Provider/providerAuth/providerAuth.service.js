@@ -1,6 +1,6 @@
-const pool = require('../../config/database');
-const { sendSms } = require('../../services/sms-service.js');
-const { sendEmail } = require('../../services/email-service');
+const pool = require('../../../config/database');
+const { sendSms } = require('../../../services/sms-service.js');
+const { sendEmail } = require('../../../services/email-service');
 const moment = require('moment');
 
 module.exports = {

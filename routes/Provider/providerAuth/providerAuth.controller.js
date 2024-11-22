@@ -1,11 +1,11 @@
-const { saveResetToken } = require("../../lib/saveToken");
+const { saveResetToken } = require("../../../lib/saveToken");
 const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvider, UpdateOTP, UpdateOTPBy_Number, updateProviderPassword } = require("./providerAuth.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
 const crypto = require("crypto");
-const { saveResetTokenProvider } = require("../../lib/SaveTokenProvider");
-const { sendEmail } = require("../../services/email-service");
+const { saveResetTokenProvider } = require("../../../lib/SaveTokenProvider");
+const { sendEmail } = require("../../../services/email-service");
 module.exports = {
     providerRegister: async (req, res) => {
         try {

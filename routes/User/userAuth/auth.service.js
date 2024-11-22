@@ -1,7 +1,7 @@
-const pool = require('../../config/database');
-const { sendEmail } = require('../../services/email-service');
+const pool = require('../../../config/database');
+const { sendEmail } = require('../../../services/email-service');
 const moment = require('moment');
-const { sendSms } = require('../../services/sms-service');
+const {sendSms} = require('../../../services/sms-service');
 module.exports = {
     getUserByEmail: (email, callback) => {
         const query = process.env.CHECKEXISTINGEMAIL.replace('<email>', email);

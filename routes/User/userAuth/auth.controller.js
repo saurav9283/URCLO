@@ -2,9 +2,9 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const moment = require('moment');
 const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify, checkRegisteredUserWithPhone, OtpVerifyPhone, OtpForLogin, findTokenInDatabase, updatePassword, findUserById } = require('../userAuth/auth.service');
-const { sendEmail } = require('../../services/email-service');
+const { sendEmail } = require('../../../services/email-service');
 const jwt = require('jsonwebtoken');
-const { saveResetToken } = require('../../lib/saveToken');
+const { saveResetToken } = require('../../../lib/saveToken');
 module.exports = {
     register: async (req, res) => {
         try {
