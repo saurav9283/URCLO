@@ -5,6 +5,8 @@ const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify
 const { sendEmail } = require('../../../services/email-service');
 const jwt = require('jsonwebtoken');
 const { saveResetToken } = require('../../../lib/saveToken');
+const { NotificationController } = require('../userNotification/user.notification.controller');
+const { notificationService } = require('../userNotification/user.notification.service');
 module.exports = {
     register: async (req, res) => {
         try {
@@ -162,12 +164,15 @@ module.exports = {
             return res.status(400).json({ msg: "Invalid OTP" });
         }
         user.isVerified = 1;
-        OtpVerifyPhone(user, (err, result) => {
+        OtpVerifyPhone(user, async(err, result) => {
             if (err) {
                 console.error("Error saving user:", err);
                 return res.status(500).json({ msg: "Internal server error" });
             }
-            return res.status(200).json({ msg: "Phone verified successfully" });
+            else {
+                await notificationService(user.id, user.name); 
+                return res.status(200).json({ msg: "Phone verified successfully" });
+            }
         });
     },
     resendEmailOtp: async (req, res) => {
@@ -277,7 +282,7 @@ module.exports = {
                     otp: newotp,
                 }
                 console.log(newPlayload)
-                OtpForLogin(newPlayload, (err, result) => {
+                OtpForLogin(newPlayload, async (err, result) => {
                     if (err) {
                         console.error("Error saving user:", err);
                         return res.status(500).json({ msg: "Internal server error" });
@@ -307,7 +312,11 @@ module.exports = {
                 if (!passwordMatch) {
                     return res.status(400).json({ msg: "Invalid password" });
                 }
-                return res.status(200).json({ msg: "Login successful" });
+                else {
+                    await notificationService(user.id, user.name); 
+
+                    return res.status(200).json({ msg: "Login successful" });
+                }
             }
         } catch (error) {
             console.error("Unexpected error:", error);
