@@ -1,6 +1,6 @@
 const pool = require('../../../config/database');
 const moment = require('moment');
-const { signIn } = require('../../../lib/sms.type');
+const { signIn } = require('../../../lib/web.notification.type');
 
 module.exports = {
     notificationService: async (userId, userName) => {
