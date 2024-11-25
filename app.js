@@ -12,6 +12,7 @@ const UserRouter = require('./routes/User/userAuth/auth.router.js');
 const UserCartRouter = require('./routes/User/UserCart/user.cart.router.js');
 const ProviderRouter = require('./routes/Provider/providerAuth/providerAuth.router.js');
 const UserNoifyRouter = require('./routes/User/userNotification/user.notification.router.js');
+const userMasterCatRouter = require('./routes/User/userService/user.service.router.js');
 
 var app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/user-auth', UserRouter);
 app.use('/api/checkout/cart' , UserCartRouter);
 app.use('/api', UserNoifyRouter);
 app.use('/api/provider-auth', ProviderRouter);
+app.use('/api/get/mastercat', userMasterCatRouter);
 
 app.get('/api', (req, res) => {
   res.send("Api is working fine")
