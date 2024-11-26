@@ -32,7 +32,7 @@ module.exports = {
                             console.error("Error while adding to cart +", err.message);
                             return callback(err);
                         }
-                        return callback(null, "Your item is on card.");
+                        return callback(null, "Your item is on card." , newQuantity);
                     });
                 } else {
                     const addToCart = process.env.ADD_TO_CART.replace('<user_id>', user_id)
@@ -44,7 +44,7 @@ module.exports = {
                             console.error("Error adding to cart:", err.message);
                             return callback(err);
                         }
-                        return callback(null, "Your item is on card.");
+                        return callback(null, "Your item is on card." , quantity);
                     });
                 }
             });
@@ -78,7 +78,7 @@ module.exports = {
                             console.error("Error while removing from cart +", err.message);
                             return callback(err);
                         }
-                        return callback(null, "Your item is removed from cart.");
+                        return callback(null, "Your item is removed from cart.", newQuantity);
                     });
                 } else {
                     return callback(null, "No item found in cart.");
@@ -124,6 +124,23 @@ module.exports = {
 
             });
 
+        } catch (error) {
+            console.error("Error:", error.message);
+            callback(error);
+        }
+    },
+    GetCountCartService: async (user_id, callback) => {
+        try {
+            const getCountCart = process.env.GET_COUNT_CART.replace('<user_id>', user_id);
+            console.log('getCountCart: ', getCountCart);
+            pool.query(getCountCart, (err, result) => {
+                if (err) {
+                    console.error("Error getting cart count:", err.message);
+                    return callback(err);
+                }
+                console.log('result: ', result);
+                callback(null, result);
+            });
         } catch (error) {
             console.error("Error:", error.message);
             callback(error);
