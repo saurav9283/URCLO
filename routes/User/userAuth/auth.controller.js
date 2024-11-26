@@ -220,7 +220,7 @@ module.exports = {
                     })
                     .catch(error => {
                         console.error("Error sending email:", error);
-                        return res.status(500).json({ msg: "Internal server error" });
+                        return res.status(400).json({ msg: "Error sending email:" });
                     });
             });
         } catch (error) {
@@ -337,7 +337,7 @@ module.exports = {
         });
         console.log('user: ', user);
         if (!user) {
-            return res.status(404).json({ msg: "You are not registered with this email yet!" });
+            return res.status(400).json({ msg: "You are not registered with this email yet!" });
         }
 
         const resetToken = crypto.randomBytes(32).toString('hex');

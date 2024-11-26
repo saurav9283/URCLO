@@ -32,7 +32,7 @@ module.exports = {
                             console.error("Error while adding to cart +", err.message);
                             return callback(err);
                         }
-                        return callback(null, "Your item is on card." , newQuantity);
+                        return callback(null, "Your item is on card.", newQuantity);
                     });
                 } else {
                     const addToCart = process.env.ADD_TO_CART.replace('<user_id>', user_id)
@@ -44,7 +44,7 @@ module.exports = {
                             console.error("Error adding to cart:", err.message);
                             return callback(err);
                         }
-                        return callback(null, "Your item is on card." , quantity);
+                        return callback(null, "Your item is on card.", quantity);
                     });
                 }
             });
@@ -89,39 +89,100 @@ module.exports = {
             callback(error);
         }
     },
+    // GetCartService: async (user_id, callback) => {
+    //     try {
+    //         const getCart = process.env.GET_CART.replace('<user_id>', user_id);
+    //         console.log('getCart: ', getCart);
+    //         pool.query(getCart, (err, result) => {
+    //             if (err) {
+    //                 console.error("Error getting cart:", err.message);
+    //                 return callback(err);
+    //             }
+    //             console.log('result: ', result);
+    //             const subCatIds = result.map(row => row.sub_cat_id);
+    //             console.log('subCatIds:', subCatIds);
+
+    //             if (subCatIds.length === 0) {
+    //                 return callback(null, { message: "Your Cart is Empty" });
+    //             }
+    //             const formattedSubCatIds = subCatIds.map(id => `'${id}'`).join(',');
+    //             const subCatQuery = process.env.GET_SUB_CAT_DETAILS
+    //             .replace('<sub_cat_id>', formattedSubCatIds);
+
+    //             console.log('subCatQuery: ', subCatQuery);
+    //             pool.query(subCatQuery, [subCatIds], (err, subCatResult) => {
+    //                 if (err) {
+    //                     console.error("Error fetching from tbl_cart:", err.message);
+    //                     return callback(err);
+    //                 }
+    //                 console.log('subCatResult: ', subCatResult);
+
+    //                 // Format and send the response
+
+    //                 callback(null, subCatResult);
+    //             });
+
+    //         });
+
+    //     } catch (error) {
+    //         console.error("Error:", error.message);
+    //         callback(error);
+    //     }
+    // },
+
     GetCartService: async (user_id, callback) => {
         try {
             const getCart = process.env.GET_CART.replace('<user_id>', user_id);
             console.log('getCart: ', getCart);
+
             pool.query(getCart, (err, result) => {
                 if (err) {
                     console.error("Error getting cart:", err.message);
                     return callback(err);
                 }
+
                 console.log('result: ', result);
-                const subCatIds = result.map(row => row.sub_cat_id);
+                // const subCatIds = result.map(row => row.sub_cat_id);
+                const subCatIds = result
+                    .filter(row => row.quantity >= 1)
+                    .map(row => row.sub_cat_id);
                 console.log('subCatIds:', subCatIds);
 
                 if (subCatIds.length === 0) {
                     return callback(null, { message: "Your Cart is Empty" });
                 }
+
                 const formattedSubCatIds = subCatIds.map(id => `'${id}'`).join(',');
-                const subCatQuery = process.env.GET_SUB_CAT_DETAILS
-                .replace('<sub_cat_id>', formattedSubCatIds);
-                
+                const subCatQuery = process.env.GET_SUB_CAT_DETAILS.replace('<sub_cat_id>', formattedSubCatIds);
+
                 console.log('subCatQuery: ', subCatQuery);
-                pool.query(subCatQuery, [subCatIds], (err, subCatResult) => {
+
+                pool.query(subCatQuery, (err, subCatResult) => {
                     if (err) {
                         console.error("Error fetching from tbl_cart:", err.message);
                         return callback(err);
                     }
+
                     console.log('subCatResult: ', subCatResult);
 
-                    // Format and send the response
+                    // Count occurrences of each sub_cat_id
+                    const subCatCount = subCatIds.reduce((countMap, id) => {
+                        countMap[id] = (countMap[id] || 0) + 1;
+                        return countMap;
+                    }, {});
 
-                    callback(null, subCatResult);
+                    // Format the response
+                    const formattedResponse = subCatResult.map(row => ({
+                        masterId: row.master_id,
+                        cat_id: row.cat_id,
+                        sub_cat_id: row.sub_cat_id,
+                        sub_cat_name: row.sub_cat_name,
+                        standard_price: row.standard_price,
+                        count: subCatCount[row.sub_cat_id] || 0,
+                    }));
+
+                    callback(null, { message: formattedResponse });
                 });
-
             });
 
         } catch (error) {
@@ -129,6 +190,7 @@ module.exports = {
             callback(error);
         }
     },
+
     GetCountCartService: async (user_id, callback) => {
         try {
             const getCountCart = process.env.GET_COUNT_CART.replace('<user_id>', user_id);
