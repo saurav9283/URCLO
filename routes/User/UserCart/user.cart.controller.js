@@ -1,4 +1,4 @@
-const { AddToCartService, RemoveFromCartService } = require("./user.cart.service");
+const { AddToCartService, RemoveFromCartService, GetCartService } = require("./user.cart.service");
 
 module.exports = {
     AddToCartController: async (req, res) => {
@@ -43,5 +43,15 @@ module.exports = {
             console.log('error: ', error);
             return res.status(500).json({ message: "Internal Server Error" });
         }
+    },
+    GetCartController: async (req, res) => {
+        const { user_id } = req.body;
+
+        GetCartService(user_id, (err, result) => {
+            if (err) {
+                return res.status(500).json({ message: "Internal Server Error" });
+            }
+            return res.status(200).json({ message: result });
+        });
     }
 }

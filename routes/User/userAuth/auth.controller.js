@@ -297,6 +297,7 @@ module.exports = {
             else {
                 const user = await new Promise((resolve, reject) => {
                     getUserByEmail(email, (err, result) => {
+                        console.log('result: ', result[0].id);
                         if (err) return reject(err);
                         resolve(result && result.length > 0 ? result[0] : null);
                     });
@@ -315,7 +316,7 @@ module.exports = {
                 else {
                     await notificationService(user.id, user.name); 
 
-                    return res.status(200).json({ msg: "Login successful" });
+                    return res.status(200).json({ msg: "Login successful",user_id: user.id });
                 }
             }
         } catch (error) {
