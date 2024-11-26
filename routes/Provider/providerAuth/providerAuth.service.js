@@ -65,7 +65,7 @@ module.exports = {
                 const serviceValues = [
                     providerId, serviceData.masterId, serviceData.cat_id, serviceData.sub_cat_id,
                     JSON.stringify(serviceData.availableTime), serviceData.price,
-                    JSON.stringify(serviceData.images)
+                    JSON.stringify(serviceData.images) , serviceData.providerImage
                 ];
 
                 pool.query(serviceQuery, serviceValues, (err, result) => {

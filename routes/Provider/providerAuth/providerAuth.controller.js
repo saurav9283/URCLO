@@ -9,9 +9,9 @@ const { sendEmail } = require("../../../services/email-service");
 module.exports = {
     providerRegister: async (req, res) => {
         try {
-            const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,images } = req.body;
+            const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,images,providerImage } = req.body;
 
-            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price) {
+            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !providerImage) {
                 return res.status(400).json({ message: "All fields are required" });
             }
             if (age < 18 || age > 60) {
@@ -43,6 +43,7 @@ module.exports = {
 
             let hashedPassword = await bcrypt.hash(password, 10);
             const otp = Math.floor(100000 + Math.random() * 900000);
+            console.log('otp: ', otp);
 
             // Data for `providers` table
             const providerData = {
@@ -68,7 +69,8 @@ module.exports = {
                 sub_cat_id,
                 availableTime,
                 price,
-                images
+                images,
+                providerImage
             };
 
             // Save data
