@@ -164,14 +164,14 @@ module.exports = {
             return res.status(400).json({ msg: "Invalid OTP" });
         }
         user.isVerified = 1;
-        OtpVerifyPhone(user, async(err, result) => {
+        OtpVerifyPhone(user, async(err, result,user_id) => {
             if (err) {
                 console.error("Error saving user:", err);
                 return res.status(500).json({ msg: "Internal server error" });
             }
             else {
                 await notificationService(user.id, user.name); 
-                return res.status(200).json({ msg: "Phone verified successfully" });
+                return res.status(200).json({ msg: "Phone verified successfully",user_id: user.id });
             }
         });
     },
@@ -354,7 +354,7 @@ module.exports = {
         }
         // console.log(process.env.JWT_SECRET_KEY, "process")
         const jwtToken = jwt.sign(tokenPayload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-        const resetLink = `http://localhost:3000/reset-password?token=${encodeURIComponent(jwtToken)}`;
+        const resetLink = `http://localhost:3000/login/reset-password?token=${encodeURIComponent(jwtToken)}`;
 
         const payload = {
             from: process.env.MAIL_SENDER_EMAIL,

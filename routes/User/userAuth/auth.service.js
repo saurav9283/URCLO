@@ -205,7 +205,7 @@ module.exports = {
                     console.error("Error updating user:", err);
                     return callback(err);
                 }
-                return callback(null, "Phone verified successfully");
+                return callback(null, "Phone verified successfully", user.id);
             });
 
         });
