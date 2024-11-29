@@ -25,10 +25,10 @@ module.exports = {
             return callback(null, result);
         });
     },
-    getsubcategoryService: (sub_cat_name, callback) => {
+    getsubcategoryService: (cat_id, callback) => {
         const getSubCategoryQuery = process.env.GET_SUB_CATEGORY_SERVICE
-        .replace('<cat_name>' , sub_cat_name);
-        // console.log('getSubCategoryQuery: ', getSubCategoryQuery);
+        .replace('<cat_id>' , cat_id);
+        console.log('getSubCategoryQuery: ', getSubCategoryQuery);
         pool.query(getSubCategoryQuery, (err, result) => {
             if (err) {
                 console.log(err);

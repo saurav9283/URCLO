@@ -21,8 +21,8 @@ module.exports = {
         });
     },
     getSubCategoryController: (req, res) => {
-        const {name} = req.query;
-        getsubcategoryService(name, (err, result) => {
+        const {cat_id} = req.query;
+        getsubcategoryService(cat_id, (err, result) => {
             if (err) {
                 console.log(err);
                 return;
