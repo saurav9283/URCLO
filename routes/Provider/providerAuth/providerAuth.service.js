@@ -25,6 +25,8 @@ module.exports = {
         });
     },
     saveProvider: async (providerData, serviceData, callback) => {
+        // console.log('serviceData: ', serviceData);
+        // console.log('providerData: ', providerData);
         try {
             const { name, email, phone, otp } = providerData;
 
@@ -50,12 +52,14 @@ module.exports = {
                 providerData.address, providerData.documentNumber, providerData.documentType, providerData.password,
                 providerData.otp, providerData.otpExpires, providerData.createdOn, providerData.isVerified,
             ];
+            console.log('providerValues: ', providerValues);
 
             pool.query(providerQuery, providerValues, (err, result) => {
                 if (err) {
                     console.error("Error saving provider data:", err.message);
                     return callback(err);
                 }
+                console.log('result:=-= ', result);
 
                 const providerId = result.insertId;
                 console.log('providerId: ', providerId);
@@ -65,7 +69,7 @@ module.exports = {
                 const serviceValues = [
                     providerId, serviceData.masterId, serviceData.cat_id, serviceData.sub_cat_id,
                     JSON.stringify(serviceData.availableTime), serviceData.price,
-                    JSON.stringify(serviceData.images) , serviceData.providerImage
+                    JSON.stringify(serviceData.images) , serviceData.providerImage, serviceData.description,
                 ];
 
                 pool.query(serviceQuery, serviceValues, (err, result) => {

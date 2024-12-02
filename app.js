@@ -20,6 +20,7 @@ app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
+app.use('/public', express.static(path.join(__dirname, 'public/images')));
 app.set('view engine', 'jade');
 
 app.use(logger('dev'));

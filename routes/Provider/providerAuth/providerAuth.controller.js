@@ -3,17 +3,99 @@ const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvid
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
+const path = require("path");
 const crypto = require("crypto");
 const { saveResetTokenProvider } = require("../../../lib/SaveTokenProvider");
 const { sendEmail } = require("../../../services/email-service");
 module.exports = {
+    // providerRegister: async (req, res) => {
+    //     try {
+    //         const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,images,providerImage } = req.body;
+
+    //         if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !providerImage) {
+    //             return res.status(400).json({ message: "All fields are required" });
+    //         }
+    //         if (age < 18 || age > 60) {
+    //             return res.status(400).json({ message: "You are not Authorised to work with us." });
+    //         }
+
+    //         // Check if email or phone already registered
+    //         const emailExists = await new Promise((resolve, reject) => {
+    //             getProviderByEmail(email, (err, result) => {
+    //                 if (err) reject(err);
+    //                 resolve(result && result.length > 0);
+    //             });
+    //         });
+
+    //         if (emailExists) {
+    //             return res.status(409).json({ message: "This Email is already in use, try with another email!" });
+    //         }
+
+    //         const phoneExists = await new Promise((resolve, reject) => {
+    //             getProviderByPhone(phone, (err, result) => {
+    //                 if (err) reject(err);
+    //                 resolve(result && result.length > 0);
+    //             });
+    //         });
+
+    //         if (phoneExists) {
+    //             return res.status(409).json({ message: "This Phone number is already in use, try with another phone number!" });
+    //         }
+
+    //         let hashedPassword = await bcrypt.hash(password, 10);
+    //         const otp = Math.floor(100000 + Math.random() * 900000);
+    //         console.log('otp: ', otp);
+
+    //         // Data for `providers` table
+    //         const providerData = {
+    //             name,
+    //             email,
+    //             age,
+    //             DOB,
+    //             phone,
+    //             address,
+    //             documentNumber,
+    //             documentType,
+    //             password: hashedPassword,
+    //             otp,
+    //             otpExpires: moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss'),
+    //             createdOn: moment().format('YYYY-MM-DD HH:mm:ss'),
+    //             isVerified: 0,
+    //         };
+
+    //         const serviceData = {
+    //             masterId,
+    //             cat_id,
+    //             sub_cat_id,
+    //             availableTime,
+    //             price,
+    //             images,
+    //             providerImage
+    //         };
+
+    //         // Save data
+    //         saveProvider(providerData, serviceData, (err, result) => {
+    //             if (err) {
+    //                 console.log(err);
+    //                 return res.status(500).json({ message: "Internal Server Error" });
+    //             }
+    //             return res.status(201).json({ message: "Registration successful. OTP sent to your email or phone." });
+    //         });
+    //     } catch (error) {
+    //         console.error(error.message);
+    //         res.status(400).json({ error: error.message });
+    //     }
+    // },
+
+
     providerRegister: async (req, res) => {
         try {
-            const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,images,providerImage } = req.body;
+            const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,description } = req.body;
 
-            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !providerImage) {
+            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price , !description) {
                 return res.status(400).json({ message: "All fields are required" });
             }
+
             if (age < 18 || age > 60) {
                 return res.status(400).json({ message: "You are not Authorised to work with us." });
             }
@@ -45,6 +127,18 @@ module.exports = {
             const otp = Math.floor(100000 + Math.random() * 900000);
             console.log('otp: ', otp);
 
+            const providerImage = req.files?.providerImage?.[0]?.path;
+            console.log('providerImage: ', providerImage);
+            const images = req.files?.images?.map((file) => file.path);
+
+            const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
+            const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
+
+
+            if (!providerImage || !images || images.length === 0) {
+                return res.status(400).json({ message: "Provider image and service images are required." });
+            }
+
             // Data for `providers` table
             const providerData = {
                 name,
@@ -62,15 +156,15 @@ module.exports = {
                 isVerified: 0,
             };
 
-            // Data for `provider_services` table
             const serviceData = {
                 masterId,
                 cat_id,
                 sub_cat_id,
                 availableTime,
                 price,
-                images,
-                providerImage
+                images: imageUrls,
+                providerImage: providerImageUrl,
+                description
             };
 
             // Save data
@@ -81,12 +175,12 @@ module.exports = {
                 }
                 return res.status(201).json({ message: "Registration successful. OTP sent to your email or phone." });
             });
+
         } catch (error) {
             console.error(error.message);
             res.status(400).json({ error: error.message });
         }
     },
-
     providerEmailVerify: async (req, res) => {
         const { email, otp } = req.body;
         if (!email || !otp) {

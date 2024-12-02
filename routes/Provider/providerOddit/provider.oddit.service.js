@@ -16,7 +16,7 @@ module.exports = {
             }
             const providerId = result[0].providerId;
             console.log('providerId: ', providerId);
-            const providerDetails = process.env.PROVIDER_DETAILS
+            const providerDetails = process.env.PROVIDER_DETAILS_ADD
                 .replace('<id>', providerId)
                 .replace('<address>', city);
             console.log('providerDetails: ', providerDetails);
