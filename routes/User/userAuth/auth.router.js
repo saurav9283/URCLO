@@ -8,7 +8,8 @@ const {
     resendPhoneOtp,
     login,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    LogoutController
 } = require('../userAuth/auth.controller');
 const router = express.Router();
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
@@ -111,7 +112,8 @@ router.post('/register', register)
     .post('/email/resend', resendEmailOtp)
     .post('/login', login) // here from login content
     .post('/password/forgot', forgotPassword)
-    .post('/password/reset', resetPassword);
+    .post('/password/reset', resetPassword)
+    .delete('/logout', LogoutController);
 
 
 

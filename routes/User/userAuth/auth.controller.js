@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const moment = require('moment');
-const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify, checkRegisteredUserWithPhone, OtpVerifyPhone, OtpForLogin, findTokenInDatabase, updatePassword, findUserById } = require('../userAuth/auth.service');
+const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify, checkRegisteredUserWithPhone, OtpVerifyPhone, OtpForLogin, findTokenInDatabase, updatePassword, findUserById, LogoutService } = require('../userAuth/auth.service');
 const { sendEmail } = require('../../../services/email-service');
 const jwt = require('jsonwebtoken');
 const { saveResetToken } = require('../../../lib/saveToken');
@@ -164,14 +164,14 @@ module.exports = {
             return res.status(400).json({ msg: "Invalid OTP" });
         }
         user.isVerified = 1;
-        OtpVerifyPhone(user, async(err, result,user_id) => {
+        OtpVerifyPhone(user, async (err, result, user_id) => {
             if (err) {
                 console.error("Error saving user:", err);
                 return res.status(500).json({ msg: "Internal server error" });
             }
             else {
-                await notificationService(user.id, user.name); 
-                return res.status(200).json({ msg: "Phone verified successfully",user_id: user.id });
+                await notificationService(user.id, user.name);
+                return res.status(200).json({ msg: "Phone verified successfully", user_id: user.id });
             }
         });
     },
@@ -314,9 +314,9 @@ module.exports = {
                     return res.status(400).json({ msg: "Invalid password" });
                 }
                 else {
-                    await notificationService(user.id, user.name); 
+                    await notificationService(user.id, user.name);
 
-                    return res.status(201).json({ msg: "Login successful",user_id: user.id });
+                    return res.status(201).json({ msg: "Login successful", user_id: user.id });
                 }
             }
         } catch (error) {
@@ -392,5 +392,23 @@ module.exports = {
             console.log('error: ', error);
             return res.status(500).json({ msg: "Internal server error" });
         }
+    },
+    LogoutController: async (req, res) => {
+        const { user_id, type } = req.body;
+        // console.log('user_id: ', user_id);
+        // console.log('type: ', type);
+        if (!user_id) {
+            return res.status(400).json({ msg: "User ID is required" });
+        }
+        if (!type) {
+            return res.status(400).json({ msg: "Type is required" });
+        }
+        LogoutService(user_id, type, (err, result) => {
+            if (err) {
+                console.error("Error saving user:", err);
+                return res.status(500).json({ msg: "Internal server error" });
+            }
+            return res.status(200).json({ msg: "Logout successful" });
+        });
     },
 };

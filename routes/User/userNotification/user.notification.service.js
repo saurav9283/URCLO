@@ -91,5 +91,24 @@ module.exports = {
             console.error("Notification service error:", error);
             throw error;
         }
+    },
+    getCountNotify: async (user_id, callback) => {
+        try {
+            if (!user_id) {
+                return callback('Please provide user id', null);
+            }
+            const getCountNotify = process.env.GET_COUNT_NOTIFY.replace('<user_id>', user_id);
+            console.log('getCountNotify: ', getCountNotify);
+            pool.query(getCountNotify, (err, result) => {
+                if (err) {
+                    console.error('Error:', err);
+                    return callback(err, null);
+                }
+                return callback(null, result);
+            });
+        } catch (error) {
+            console.error("Notification service error:", error);
+            throw error;
+        }
     }
 };

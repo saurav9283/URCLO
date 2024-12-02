@@ -307,6 +307,18 @@ module.exports = {
                 });
             });
         });
+    },
+    LogoutService: (userId,type, callback) => {
+        const query = process.env.LOGOUT.replace('<userId>', userId)
+            .replace('<type>', type);
+        console.log('query: ', query);
+        pool.query(query, (err, result) => {
+            if (err) {
+                console.error("Error logging out user:", err);
+                return callback(err);
+            }
+            return callback(null, `${type} logged out successfully`);
+        });
     }
 
 }
