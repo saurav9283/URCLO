@@ -129,10 +129,16 @@ module.exports = {
 
             const providerImage = req.files?.providerImage?.[0]?.path;
             console.log('providerImage: ', providerImage);
-            const images = req.files?.images?.map((file) => file.path);
+            // const images = req.files?.images?.map((file) => file.path);
+            const image1 = req.files?.images1?.[0]?.path;
+            const image2 = req.files?.images2?.[0]?.path;
+            const image3 = req.files?.images3?.[0]?.path;
+
+            const images = [image1, image2, image3].filter((image) => image);
 
             const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
-            const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
+            const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}` );
+            // const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
 
 
             if (!providerImage || !images || images.length === 0) {
