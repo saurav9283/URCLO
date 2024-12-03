@@ -77,5 +77,25 @@ module.exports = {
             console.log('Error: ', error);
             return callback(error);
         }
+    },
+    DeletebuyerRecode: (user_id,sub_cat_id,provider_id, callback) => {
+        try {
+            const deleteOrderQuery = process.env.DELETE_ORDER_QUERY
+                .replace('<user_id>', user_id)
+                .replace('<sub_cat_id>', sub_cat_id)
+                .replace('<provider_id>', provider_id);
+
+            pool.query(deleteOrderQuery, (err, result) => {
+                if (err) {
+                    console.log("Error deleting order: ", err);
+                    return callback(err);
+                }
+
+                return callback(null, result);
+            });
+        } catch (error) {
+            console.log('Error: ', error);
+            return callback(error);
+        }
     }
 };

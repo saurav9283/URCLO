@@ -1,6 +1,5 @@
-const { UserBuyerService } = require("./user.buyer.service");
+const { UserBuyerService, DeletebuyerRecode } = require("./user.buyer.service");
 const { providerNotifyService } = require("../../Provider/providerNotify/provider.notify.service");
-
 module.exports = {
     UserBuyerController: async (req, res) => {
         try {
@@ -14,7 +13,7 @@ module.exports = {
 
             // Process each order
             const orderPromises = orders?.map(async (order) => {
-                const { sub_cat_id, provider_id, quantity,schedule_time } = order;
+                const { sub_cat_id, provider_id, quantity, schedule_time } = order;
                 console.log('schedule_time: ', schedule_time);
                 console.log('Processing order:', sub_cat_id, provider_id, quantity);
 
@@ -26,7 +25,7 @@ module.exports = {
                 try {
                     // Process order and notify provider
                     const result = await new Promise((resolve, reject) => {
-                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity,schedule_time, async (err, result) => {
+                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity, schedule_time, async (err, result) => {
                             if (err) {
                                 console.error("Error processing order:", err);
                                 return reject({ message: "Failed to process order", error: err, order });
@@ -56,36 +55,48 @@ module.exports = {
                     return Promise.reject(error);
                 }
             });
+
             // Wait for all orders to finish
             const results = await Promise.allSettled(orderPromises);
             console.log('results: ', results);
-            if(results[0].status === "rejected"){ 
-                return res.status(400).json({ message: "No orders to process" });
-            }
-            else{
+
+            // Check if the first result is rejected (or any rejection in the results)
+            const rejectedResults = results.filter(result => result.status === "rejected");
+            if (rejectedResults.length > 0) {
+                // Clean up by deleting the buyer record in case of error
+                const { sub_cat_id, provider_id } = orders[0];  // Assuming you want to delete based on the first order
+                DeletebuyerRecode(user_id, sub_cat_id, provider_id, (err, result) => {
+                    if (err) {
+                        console.error("Error deleting order:", err);
+                        return res.status(500).json({ message: "Internal Server Error during deletion", error: err });
+                    }
+
+                    // Respond with the error details for rejected orders
+                    return res.status(400).json({
+                        message: "No orders to process",
+                        errors: rejectedResults,
+                    });
+                });
+            } else {
+                // If all orders processed successfully
                 return res.status(200).json({
                     message: "All services bought successfully"
                 });
             }
 
-            // Separate successful and failed orders
-            // const successfulOrders = results.filter(r => r.status === "fulfilled").map(r => r.value);
-            // const failedOrders = results.filter(r => r.status === "rejected").map(r => r.reason);
-
-
-            // // Respond with appropriate messages
-            // if (failedOrders.length > 0) {
-            //     return res.status(207).json({
-            //         message: "Partial success: Some orders failed.",
-            //         // successfulOrders,
-            //         // failedOrders,
-            //     });
-            // }
-
-            
         } catch (error) {
             console.error("Internal Server Error:", error);
+
+            // In case of internal server error, delete the order record as a cleanup step
+            const { sub_cat_id, provider_id } = orders[0];  // Assuming you want to delete based on the first order
+            // DeletebuyerRecode(user_id, sub_cat_id, provider_id, (err, result) => {
+            //     if (err) {
+            //         console.error("Error deleting order:", err);
+            //         return res.status(500).json({ message: "Internal Server Error during deletion", error: err });
+            //     }
+
             return res.status(500).json({ message: "Internal Server Error", error });
+            // });
         }
     },
 };
