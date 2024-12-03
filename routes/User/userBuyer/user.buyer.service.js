@@ -32,6 +32,10 @@ module.exports = {
                         console.log("Error fetching availableTime: ", err);
                         return callback(err);
                     }
+                    console.log('fetchResult.length: ', fetchResult.length);
+                    if(fetchResult.length === 0) {
+                        return callback(null, "No available time found");
+                    }
                     // console.log('fetchResult: ', fetchResult);
 
                     let availableTimeString = fetchResult[0]?.availableTime;

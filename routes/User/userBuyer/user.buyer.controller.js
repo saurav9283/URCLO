@@ -31,6 +31,10 @@ module.exports = {
                                 console.error("Error processing order:", err);
                                 return reject({ message: "Failed to process order", error: err, order });
                             }
+                            if (result === "No available time found") {
+                                console.log("No available time found for order:", order);
+                                return reject({ message: "No available time found", order });
+                            }
 
                             try {
                                 await providerNotifyService(user_id, provider_id);
@@ -52,26 +56,33 @@ module.exports = {
                     return Promise.reject(error);
                 }
             });
-
             // Wait for all orders to finish
             const results = await Promise.allSettled(orderPromises);
-
-            // Separate successful and failed orders
-            const successfulOrders = results.filter(r => r.status === "fulfilled").map(r => r.value);
-            const failedOrders = results.filter(r => r.status === "rejected").map(r => r.reason);
-
-            // Respond with appropriate messages
-            if (failedOrders.length > 0) {
-                return res.status(207).json({
-                    message: "Partial success: Some orders failed.",
-                    // successfulOrders,
-                    // failedOrders,
+            console.log('results: ', results);
+            if(results[0].status === "rejected"){ 
+                return res.status(400).json({ message: "No orders to process" });
+            }
+            else{
+                return res.status(200).json({
+                    message: "All services bought successfully"
                 });
             }
 
-            return res.status(200).json({
-                message: "All services bought successfully"
-            });
+            // Separate successful and failed orders
+            // const successfulOrders = results.filter(r => r.status === "fulfilled").map(r => r.value);
+            // const failedOrders = results.filter(r => r.status === "rejected").map(r => r.reason);
+
+
+            // // Respond with appropriate messages
+            // if (failedOrders.length > 0) {
+            //     return res.status(207).json({
+            //         message: "Partial success: Some orders failed.",
+            //         // successfulOrders,
+            //         // failedOrders,
+            //     });
+            // }
+
+            
         } catch (error) {
             console.error("Internal Server Error:", error);
             return res.status(500).json({ message: "Internal Server Error", error });
