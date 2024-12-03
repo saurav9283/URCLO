@@ -14,7 +14,8 @@ module.exports = {
 
             // Process each order
             const orderPromises = orders?.map(async (order) => {
-                const { sub_cat_id, provider_id, quantity } = order;
+                const { sub_cat_id, provider_id, quantity,schedule_time } = order;
+                console.log('schedule_time: ', schedule_time);
                 console.log('Processing order:', sub_cat_id, provider_id, quantity);
 
                 // Validate order details
@@ -25,7 +26,7 @@ module.exports = {
                 try {
                     // Process order and notify provider
                     const result = await new Promise((resolve, reject) => {
-                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity, async (err, result) => {
+                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity,schedule_time, async (err, result) => {
                             if (err) {
                                 console.error("Error processing order:", err);
                                 return reject({ message: "Failed to process order", error: err, order });

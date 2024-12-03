@@ -68,7 +68,7 @@ module.exports = {
                 const serviceQuery =  process.env.PROVIDER_SERVICE_DETAILS;
                 const serviceValues = [
                     providerId, serviceData.masterId, serviceData.cat_id, serviceData.sub_cat_id,
-                    JSON.stringify(serviceData.availableTime), serviceData.price,
+                    serviceData.availableTime, serviceData.price,
                     JSON.stringify(serviceData.images) , serviceData.providerImage, serviceData.description,
                 ];
 
