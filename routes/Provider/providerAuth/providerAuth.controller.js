@@ -316,7 +316,7 @@ module.exports = {
             if (!(await bcrypt.compare(password, provider.password))) {
                 return res.status(400).json({ message: "Invalid password" });
             }
-            return res.status(200).json({ message: "Login successful" });
+            return res.status(200).json({ message: "Login successful",provider_id:provider.id });
         }
         if (phone) {
             const provider = await new Promise((resolve, reject) => {
@@ -334,7 +334,7 @@ module.exports = {
             if (!(await bcrypt.compare(password, provider.password))) {
                 return res.status(400).json({ message: "Invalid password" });
             }
-            return res.status(200).json({ message: "Login successful" });
+            return res.status(200).json({ message: "Login successful", provider_id:provider.id });
         }
     },
     providerForgorPassword: async (req, res) => {
@@ -403,8 +403,13 @@ module.exports = {
             await updateProviderPassword(provider, hashedPassword);
             return res.status(200).json({ msg: "Password reset successful" });
         } catch (error) {
-            console.log('error: ', error);
-            return res.status(500).json({ msg: "Internal server error" });
+            console.log('error:=-=- ', error);
+            if(error.message === 'jwt expired') {
+                return res.status(400).json({ msg: "Token expired again try to forget password" });
+            }
+            else{
+                return res.status(500).json({ msg: error.message });
+            }
         }
     },
 }
