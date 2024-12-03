@@ -1,5 +1,5 @@
 const { UserBuyerService } = require("./user.buyer.service");
-const { providerNotifyService } = require("../../provider/providerNotify/provider.notify.service");
+const { providerNotifyService } = require("../../Provider/providerNotify/provider.notify.service");
 
 module.exports = {
     UserBuyerController: async (req, res) => {
