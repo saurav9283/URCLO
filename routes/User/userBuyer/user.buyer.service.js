@@ -34,7 +34,7 @@ module.exports = {
                     }
                     // console.log('fetchResult: ', fetchResult);
 
-                    let availableTimeString = fetchResult[0].availableTime;
+                    let availableTimeString = fetchResult[0]?.availableTime;
                     availableTimeString = availableTimeString.replace(/([{\[,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
                     let availableTime;
 
