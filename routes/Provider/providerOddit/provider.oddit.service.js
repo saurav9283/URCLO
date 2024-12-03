@@ -25,8 +25,13 @@ module.exports = {
                     console.log(err);
                     return callback(err);
                 }
-                const response = { ...providerResult[0] ,...result[0]};
-                return callback(null, response);
+                if (providerResult.length === 0) {
+                    return callback(null, { message: "No provider details found" });
+                }
+                else {
+                    const response = { ...providerResult[0], ...result[0] };
+                    return callback(null, response);
+                }
             });
         });
     }
