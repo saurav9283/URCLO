@@ -160,7 +160,7 @@ module.exports = {
         if (!user) {
             return res.status(404).json({ msg: "User not found" });
         }
-        if (user.otp !== otp) {
+        if (user?.otp !== otp) {
             return res.status(400).json({ msg: "Invalid OTP" });
         }
         user.isVerified = 1;

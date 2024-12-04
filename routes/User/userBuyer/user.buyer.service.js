@@ -13,7 +13,10 @@ module.exports = {
                 .replace('<provider_id>', provider_id)
                 .replace('<quantity>', quantity)
                 .replace('<createdon>', currentDateTime)
-                .replace('<schedule_time>', schedule_time);
+                .replace('<schedule_time>', schedule_time)
+                .replace('<IsserviceDone>', 0)
+                .replace('<serviceStartTime>' , null)
+                .replace('<serviceEndTime>' , null);
 
             console.log('create_order: ', create_order);
 

@@ -87,14 +87,15 @@ module.exports = {
     //     }
     // },
 
-
     providerRegister: async (req, res) => {
         try {
             const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,description } = req.body;
+            console.log('req.body: ', req.body);
 
-            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price , !description) {
-                return res.status(400).json({ message: "All fields are required" });
-            }
+            // if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price , !description) {
+            //     return res.status(400).json({ message: "All fields are required" });
+            // }
+
 
             if (age < 18 || age > 60) {
                 return res.status(400).json({ message: "You are not Authorised to work with us." });
@@ -109,7 +110,7 @@ module.exports = {
             });
 
             if (emailExists) {
-                return res.status(409).json({ message: "This Email is already in use, try with another email!" });
+                return res.status(409).json({ message: "Email is already in use" });
             }
 
             const phoneExists = await new Promise((resolve, reject) => {
@@ -120,7 +121,7 @@ module.exports = {
             });
 
             if (phoneExists) {
-                return res.status(409).json({ message: "This Phone number is already in use, try with another phone number!" });
+                return res.status(409).json({ message: "Phone number is already in use!" });
             }
 
             let hashedPassword = await bcrypt.hash(password, 10);
@@ -133,17 +134,16 @@ module.exports = {
             const image1 = req.files?.images1?.[0]?.path;
             const image2 = req.files?.images2?.[0]?.path;
             const image3 = req.files?.images3?.[0]?.path;
-
             const images = [image1, image2, image3].filter((image) => image);
 
             const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
             const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}` );
             // const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
 
+            // if (!providerImage || !images || images.length === 0) {
+            //     return res.status(400).json({ message: "Provider image and service images are required." });
+            // }
 
-            if (!providerImage || !images || images.length === 0) {
-                return res.status(400).json({ message: "Provider image and service images are required." });
-            }
 
             // Data for `providers` table
             const providerData = {
@@ -354,7 +354,6 @@ module.exports = {
             console.log('resetToken: ', resetToken);
             const tokenExpiry = moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss');
             const iat = moment().unix();
-
             const tokenPayload = {
                 resetToken: resetToken,
                 email: email,
@@ -363,7 +362,7 @@ module.exports = {
                 provider: provider.id,
             };
             const jwtToken = jwt.sign(tokenPayload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-            const resetLink = `http://localhost:3000/reset-password?token=${encodeURIComponent(jwtToken)}`;
+            const resetLink = `http://localhost:3000/provider/reset-password?token=${encodeURIComponent(jwtToken)}`;
 
             const payload = {
                 from: process.env.MAIL_SENDER_EMAIL,

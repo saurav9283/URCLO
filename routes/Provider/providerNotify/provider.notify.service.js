@@ -1,12 +1,13 @@
 const pool = require("../../../config/database");
 const moment = require('moment');
-const { appointmentSchedule } = require('../../../lib/web.notification.type');
+const { appointmentSchedule, serviceStarted, serviceEnded } = require('../../../lib/web.notification.type');
+
 
 module.exports = {
-    providerNotifyService : async (user_id,providerId ) => {
+    providerNotifyService : async (user_id,providerId,schedule_time ) => {
         // console.log('providerId,user_id: ', providerId,user_id);
         const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        const providerSMS = appointmentSchedule.schedule.replace('[Date and Time]', currentDateTime);
+        const providerSMS = appointmentSchedule.schedule.replace('[Date and Time]', schedule_time);
 
         try {
             const payload = {
@@ -37,7 +38,82 @@ module.exports = {
             });
         } catch (error) {
             console.error("Provider Notification service error:", error);
-            throw error;
+            return { message: "Internal Server Error"  };
         }
     },
+    providerNotifyStartService: async (provider_id, user_id) => {
+        // console.log('provider_id, user_id: ', provider_id, user_id);
+        const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        const providerSMS = serviceStarted.sms.replace('[USER NAME]', user_id);
+
+        try { 
+            const payload = {
+                providerId: provider_id,
+                user_id,
+                content:  providerSMS,
+                code: serviceStarted.code,
+                type: serviceStarted.type,
+                createdon: currentDateTime,
+            };
+            // console.log('payload: ', payload);
+            const query = process.env.INSERT_PROVIDER_SMS_TO_START
+            .replace('<provider_id>', payload.providerId)
+            .replace('<user_id>', payload.user_id)
+            .replace('<content>', payload.content)
+            .replace('<code>', payload.code)
+            .replace('<type>', payload.type)
+            .replace('<createdon>', payload.createdon);
+            // console.log('query: ', query);
+            return new Promise((resolve, reject) => {
+                pool.query(query, (error, results) => {
+                    if (error) {
+                        console.error('Error:', error);
+                        return reject(error);
+                    }
+                    return resolve(results);
+                });
+            });
+        } catch (error) {
+            console.error("Provider Notification service error:", error);
+            return { message: "Internal Server Error"  };
+        }
+    },
+    providerNotifyEndService: async (provider_id, user_id) => {
+        // console.log('provider_id, user_id: ', provider_id, user_id);
+        const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        const providerSMS = serviceEnded.sms.replace('[USER NAME]', user_id);
+
+        try { 
+            const payload = {
+                providerId: provider_id,
+                user_id,
+                content:  providerSMS,
+                code: serviceEnded.code,
+                type: serviceEnded.type,
+                createdon: currentDateTime,
+            };
+            
+            // console.log('payload: ', payload);
+            const query = process.env.INSERT_PROVIDER_SMS_TO_END
+            .replace('<provider_id>', payload.providerId)
+            .replace('<user_id>', payload.user_id)
+            .replace('<content>', payload.content)
+            .replace('<code>', payload.code)
+            .replace('<type>', payload.type)
+            .replace('<createdon>', payload.createdon);
+            // console.log('query: ', query);
+            return new Promise((resolve, reject) => {
+                pool.query(query, (error, results) => {
+                    if (error) {
+                        console.error('Error:', error);
+                        return reject(error);
+                    }
+                    return resolve(results);
+                });
+            });
+        } catch (error) {
+            console.error("Provider Notification service error:", error);
+            return { message: "Internal Server Error"  };
+        }
+    }
 }

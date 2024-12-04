@@ -36,7 +36,7 @@ module.exports = {
                             }
 
                             try {
-                                await providerNotifyService(user_id, provider_id);
+                                await providerNotifyService(user_id, provider_id,schedule_time);
                                 return resolve(result);
                             } catch (notifyError) {
                                 console.error("Notification error:", notifyError);
