@@ -143,5 +143,21 @@ module.exports = {
                 }
             });
         });
+    },
+    ProviderOdditAllJobsService: (provider_id, callback) => {
+        const providerAllJobs = process.env.PROVIDER_ALL_JOBS
+        .replace('<providerId>', provider_id);
+        // console.log('providerAllJobs: ', providerAllJobs);
+        pool.query(providerAllJobs, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            if (result.length === 0) {
+                return callback(null, { message: "No jobs found" });
+            }
+            return callback(null, result);
+        });
     }
+    
 }
