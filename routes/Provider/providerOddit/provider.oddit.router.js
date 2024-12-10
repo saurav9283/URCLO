@@ -1,5 +1,5 @@
 const express = require('express');
-const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController } = require('./provider.oddit.controller');
+const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController, ProviderOdditFiggureController } = require('./provider.oddit.controller');
 const upload = require('../../../lib/uploadFunction');
 
 const router = express.Router();
@@ -15,4 +15,7 @@ router.put('/oddit/update-job', upload.fields([
     { name: "images2", maxCount: 1 },
     { name: "images3", maxCount: 1 }
   ]), ProviderOdditEditController);
+router.get('/oddit/provider-figure', ProviderOdditFiggureController)
+
+
 module.exports = router;

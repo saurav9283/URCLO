@@ -1,4 +1,4 @@
-const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails } = require("./provider.oddit.service");
+const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService } = require("./provider.oddit.service");
 const path = require('path');
 
 module.exports = {
@@ -170,6 +170,20 @@ module.exports = {
             console.error('Error:', error.message);
             res.status(400).json({ error: error.message });
         }
+    },
+    ProviderOdditFiggureController: (req, res) => {
+        const { provider_id } = req.query;
+        console.log(provider_id);
+        if (!provider_id) {
+            return res.status(400).json({ message: "Please provide provider id" })
+        }
+        ProviderOdditGetFiggureService(provider_id, (err, result) => {
+            if (err) {
+                console.log('err: ', err);
+                res.status(500).json({ message: "Internal Server Error" })
+            }
+            res.status(200).json({ result })
+        });
     }
 
 }
