@@ -146,7 +146,7 @@ module.exports = {
     },
     ProviderOdditAllJobsService: (provider_id, callback) => {
         const providerAllJobs = process.env.PROVIDER_ALL_JOBS
-        .replace('<providerId>', provider_id);
+            .replace('<providerId>', provider_id);
         // console.log('providerAllJobs: ', providerAllJobs);
         pool.query(providerAllJobs, [], (err, result) => {
             if (err) {
@@ -158,6 +158,68 @@ module.exports = {
             }
             return callback(null, result);
         });
-    }
-    
+    },
+    ProviderOdditGetDetailsService: (provider_id, callback) => {
+        const providerDetails = process.env.GET_PROVIDER_DETAILS
+            .replace('<providerId>', provider_id);
+        console.log('providerDetails: ', providerDetails);
+        pool.query(providerDetails, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+    },
+    getProviderDetails: (providerId, callback) => {
+        const query = process.env.GET_PROVIDER_DETAILS_IMages.replace('<providerId>', providerId);
+        console.log('query: ', query); 
+        pool.query(query, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+    }, 
+    ProviderOdditEditService: async (providerData, serviceData, callback) => {
+        console.log('serviceData: ', serviceData);
+        const providerQuery = process.env.UPDATE_PROVIDER_DETAILS
+        .replace('<providerId>', providerData.providerId)
+        .replace('<name>', providerData.name)
+        .replace('<email>', providerData.email)
+        .replace('<age>', providerData.age)
+        .replace('<DOB>', providerData.DOB)
+        .replace('<phone>', providerData.phone)
+        .replace('<address>', providerData.address)
+        .replace('<documentNumber>', providerData.documentNumber)
+        .replace('<documentType>', providerData.documentType);
+        console.log('providerQuery: ', providerQuery);
+        pool.query(providerQuery, (err, result) => {
+            if (err) {
+                console.error("Error updating provider data:", err.message);
+                return callback(err);
+            }
+ 
+            const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
+            .replace('<providerId>', providerData.providerId)
+            .replace('<masterId>', serviceData.masterId)
+            .replace('<cat_id>', serviceData.cat_id)
+            .replace('<sub_cat_id>', serviceData.sub_cat_id)
+            .replace('<availableTime>', serviceData.availableTime)
+            .replace('<price>', serviceData.price)
+            .replace('<images_details>', JSON.stringify(serviceData.images))
+            .replace('<description>', serviceData.description)
+            .replace('<providerImage>', serviceData.providerImage);
+            console.log('serviceQuery: ', serviceQuery);
+             
+            pool.query(serviceQuery, (err, result) => {
+                if (err) {
+                    console.error("Error updating service data:", err.message);
+                    return callback(err);
+                }
+                callback(null, "Data updated successfully.");
+            });
+        });
+    },
 }
