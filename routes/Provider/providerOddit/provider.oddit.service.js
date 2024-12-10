@@ -236,49 +236,22 @@ module.exports = {
         });
     },
     ProviderOdditGetFiggureService: (provider_id, callback) => {
-        const totalBookingsQuery = process.env.totalBookingsQuery
+        const providerFiguresQuery = process.env.PROVIDER_FIGURES_QUERY;
 
-        const completedBookingsQuery = process.env.completedBookingsQuery
-
-        const pendingBookingsQuery = process.env.pendingBookingsQuery;
-
-        const totalEarningsQuery = process.env.totalEarningsQuery;
-
-        pool.query(totalBookingsQuery, [provider_id], (err, totalBookingsResult) => {
+        pool.query(providerFiguresQuery, [provider_id, provider_id, provider_id, provider_id], (err, result) => {
             if (err) {
                 console.log(err);
                 return callback(err);
             }
 
-            pool.query(completedBookingsQuery, [provider_id], (err, completedBookingsResult) => {
-                if (err) {
-                    console.log(err);
-                    return callback(err);
-                }
+            const figures = {
+                totalBookings: result[0].totalBookings,
+                completedBookings: result[0].completedBookings,
+                pendingBookings: result[0].pendingBookings,
+                totalEarnings: result[0].totalEarnings
+            };
 
-                pool.query(pendingBookingsQuery, [provider_id], (err, pendingBookingsResult) => {
-                    if (err) {
-                        console.log(err);
-                        return callback(err);
-                    }
-
-                    pool.query(totalEarningsQuery, [provider_id], (err, totalEarningsResult) => {
-                        if (err) {
-                            console.log(err);
-                            return callback(err);
-                        }
-
-                        const figures = {
-                            totalBookings: totalBookingsResult[0].totalBookings,
-                            completedBookings: completedBookingsResult[0].completedBookings,
-                            pendingBookings: pendingBookingsResult[0].pendingBookings,
-                            totalEarnings: totalEarningsResult[0].totalEarnings
-                        };
-
-                        return callback(null, figures);
-                    });
-                });
-            });
+            return callback(null, figures);
         });
     }
 }
