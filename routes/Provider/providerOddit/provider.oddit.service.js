@@ -1,6 +1,7 @@
 const pool = require("../../../config/database.js");
 const moment = require('moment');
 const { providerNotifyStartService, providerNotifyEndService } = require("../providerNotify/provider.notify.service.js");
+const { sendEmail } = require("../../../services/email-service.js");
 
 module.exports = {
     ProviderOdditLocationService: (city, sub_cat_id, callback) => {
@@ -213,10 +214,22 @@ module.exports = {
             .replace('<providerImage>', serviceData.providerImage);
             console.log('serviceQuery: ', serviceQuery);
              
-            pool.query(serviceQuery, (err, result) => {
+            pool.query(serviceQuery,async (err, result) => {
                 if (err) {
                     console.error("Error updating service data:", err.message);
                     return callback(err);
+                } 
+                // console.log('result: ', result);
+                if(result.affectedRows > 0)
+                {
+                    const emailPayload = {
+                        from: process.env.MAIL_SENDER_EMAIL,
+                        to: providerData.email,
+                        subject: 'Profile Updated Successfully',
+                        template: 'providerDetailUpdate.ejs',
+                        data: { name: providerData.name },
+                    };
+                    await sendEmail(emailPayload);
                 }
                 callback(null, "Data updated successfully.");
             });
