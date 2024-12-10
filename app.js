@@ -17,7 +17,15 @@ const userMasterCatRouter = require('./routes/User/userService/user.service.rout
 const ProviderOdditRouter = require('./routes/Provider/providerOddit/provider.oddit.router.js');
 
 var app = express();
-app.use(cors());
+
+const corsOptions = {
+  origin: 'http://localhost:3000', 
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  credentials: true, // Allow cookies and credentials
+};
+
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -59,9 +67,9 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-const PORT = process.env.PORT || 9001;
+const PORT = "4956";
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 })
 
-module.exports = app;
+module.exports = app; 

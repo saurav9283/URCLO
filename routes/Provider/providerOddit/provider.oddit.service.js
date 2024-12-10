@@ -201,7 +201,7 @@ module.exports = {
                 console.error("Error updating provider data:", err.message);
                 return callback(err);
             }
- 
+
             const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
             .replace('<providerId>', providerData.providerId)
             .replace('<masterId>', serviceData.masterId)
@@ -252,6 +252,70 @@ module.exports = {
             };
 
             return callback(null, figures);
+        });
+    },
+    ProviderOdditApprovalService: (provider_id, user_id,AcceptanceStatus,sub_cat_id, callback) => {
+        const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
+            .replace('<provider_id>', provider_id)
+            .replace('<user_id>', user_id)
+            .replace('<AcceptanceStatus>', AcceptanceStatus)
+            .replace('<sub_cat_id>',sub_cat_id)
+        console.log('providerApprovalQuery: ', providerApprovalQuery);
+        pool.query(providerApprovalQuery, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            if (result.affectedRows === 0) {
+                return callback(null, { message: "No jobs found" });
+            }
+
+            // Fetch user email and name for sending email
+            const getUserDetailsQuery = process.env.getUserDetailsQuery
+            .replace('<user_id>', user_id);
+            pool.query(getUserDetailsQuery, async(err, userResult) => {
+                if (err) {
+                    console.log(err);
+                    return callback(err);
+                }
+                if (userResult.length === 0) {
+                    return callback(null, { message: "User not found" });
+                }
+
+                const userEmail = userResult[0].email;
+                console.log('userEmail: ', userEmail);
+                const userName = userResult[0].name;
+                console.log('userName: ', userName);
+
+                console.log('AcceptanceStatus: ', AcceptanceStatus); 
+                if (AcceptanceStatus ===  1) {
+                    console.log(" inside if"); 
+                    // Send email for payment
+                    const emailPayload = {
+                        from: process.env.MAIL_SENDER_EMAIL,
+                        to: userEmail,
+                        subject: 'Order Accepted - Payment Required',
+                        template: 'orderAccepted.ejs',
+                        data: { userName: userName },
+                    }; 
+                    console.log('emailPayload: ', emailPayload);
+                   await sendEmail(emailPayload);
+                    return callback(null, { message: "Job approved and email sent for payment" });
+                } else if (AcceptanceStatus === 2) { 
+                    // Send email for cancellation
+                    const emailPayload = {
+                        from: process.env.MAIL_SENDER_EMAIL,
+                        to: userEmail,
+                        subject: 'Order Cancelled',
+                        template: 'orderCancelled.ejs',
+                        data: { userName: userName },
+                    }; 
+                    await sendEmail(emailPayload);
+                    return callback(null, { message: "Job cancelled and email sent to user" });
+                } else {
+                    return callback(null, { message: "Job status updated" });
+                }
+            });
         });
     }
 }

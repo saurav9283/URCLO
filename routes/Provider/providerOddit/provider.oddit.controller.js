@@ -1,4 +1,4 @@
-const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService } = require("./provider.oddit.service");
+const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService } = require("./provider.oddit.service");
 const path = require('path');
 
 module.exports = {
@@ -93,15 +93,15 @@ module.exports = {
             } = req.body;
             console.log('req.body: ', req.body);
 
-            if(!name || !email || !age || !DOB || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description || !providerId ) {
+            if (!name || !email || !age || !DOB || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description || !providerId) {
                 return res.status(400).json({ message: "Please provide all the details" });
             }
 
             if (age < 18 || age > 60) {
                 return res.status(400).json({ message: "You are not legally allowed to work with us." });
             }
-             // Fetch existing provider and service data
-             const existingData = await new Promise((resolve, reject) => {
+            // Fetch existing provider and service data
+            const existingData = await new Promise((resolve, reject) => {
                 getProviderDetails(providerId, (err, result) => {
                     if (err) reject(err);
                     resolve(result[0]);
@@ -156,7 +156,7 @@ module.exports = {
                 description,
                 images,
                 providerImage: providerImageUrl,
-                description, 
+                description,
             };
             ProviderOdditEditService(updatedData, serviceData, (err, result) => {
                 if (err) {
@@ -173,7 +173,7 @@ module.exports = {
     },
     ProviderOdditFiggureController: (req, res) => {
         const { provider_id } = req.query;
-        console.log(provider_id);
+        // console.log(provider_id);
         if (!provider_id) {
             return res.status(400).json({ message: "Please provide provider id" })
         }
@@ -184,6 +184,24 @@ module.exports = {
             }
             res.status(200).json({ result })
         });
+    },
+    ProviderOdditApprovalController: (req, res) => {
+        const { provider_id, user_id, AcceptanceStatus,sub_cat_id } = req.body;
+        console.log(provider_id, user_id, AcceptanceStatus);
+        try { 
+            ProviderOdditApprovalService(provider_id, user_id, AcceptanceStatus,sub_cat_id, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+
+                res.status(200).json({ result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+
+        }
     }
 
 }

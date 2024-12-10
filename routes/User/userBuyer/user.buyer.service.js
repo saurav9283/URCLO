@@ -16,7 +16,8 @@ module.exports = {
                 .replace('<schedule_time>', schedule_time)
                 .replace('<IsserviceDone>', 0)
                 .replace('<serviceStartTime>' , null)
-                .replace('<serviceEndTime>' , null);
+                .replace('<serviceEndTime>' , null)
+                .replace('<Acceptance_Status>' , 0);
 
             console.log('create_order: ', create_order);
 
