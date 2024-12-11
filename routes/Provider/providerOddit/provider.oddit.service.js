@@ -163,8 +163,8 @@ module.exports = {
     },
     ProviderOdditGetDetailsService: (provider_id, callback) => {
         const providerDetails = process.env.GET_PROVIDER_DETAILS
-            .replace('<providerId>', provider_id);
-        console.log('providerDetails: ', providerDetails);
+            .replace('<providerId>', provider_id); 
+        // console.log('providerDetails: ', providerDetails);
         pool.query(providerDetails, [], (err, result) => {
             if (err) {
                 console.log(err);
