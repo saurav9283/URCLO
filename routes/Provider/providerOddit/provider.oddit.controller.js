@@ -1,5 +1,6 @@
-const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService } = require("./provider.oddit.service");
+const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService } = require("./provider.oddit.service");
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
     ProviderOdditController: (req, res) => {
@@ -78,6 +79,20 @@ module.exports = {
         ProviderOdditGetDetailsService(provider_id, (err, result) => {
             if (err) {
                 console.log('err: ', err);
+                res.status(500).json({ message: "Internal Server Error" })
+            }
+            res.status(200).json({ result })
+        });
+    },
+    ProviderOdditServiceDetailsController: (req, res) => {
+        const { masterId , cat_id, sub_cat_id } = req.body;
+        console.log(masterId, cat_id, sub_cat_id);
+        if (!masterId || !cat_id || !sub_cat_id) {
+            return res.status(400).json({ message: "Please provide all the details" });
+        }
+        ProviderOdditGetServiceDetailsService(masterId, cat_id, sub_cat_id, (err, result) => {
+            if (err) {
+                console.log('err: ', err); 
                 res.status(500).json({ message: "Internal Server Error" })
             }
             res.status(200).json({ result })
@@ -186,10 +201,10 @@ module.exports = {
         });
     },
     ProviderOdditApprovalController: (req, res) => {
-        const { provider_id, user_id, AcceptanceStatus,sub_cat_id } = req.body;
+        const { provider_id, user_id, AcceptanceStatus, sub_cat_id } = req.body;
         console.log(provider_id, user_id, AcceptanceStatus);
-        try { 
-            ProviderOdditApprovalService(provider_id, user_id, AcceptanceStatus,sub_cat_id, (err, result) => {
+        try {
+            ProviderOdditApprovalService(provider_id, user_id, AcceptanceStatus, sub_cat_id, (err, result) => {
                 if (err) {
                     console.log('err: ', err);
                     res.status(500).json({ message: "Internal Server Error" })
@@ -201,6 +216,31 @@ module.exports = {
             console.error('Error:', error.message);
             res.status(400).json({ error: error.message });
 
+        }
+    },
+    ProviderOdditPaymentStatusController: (req, res) => {
+        // const { user_id, provider_id, sub_cat_id } = req.body;
+        const token = req.query.token
+        console.log('token: ', token);
+        if (!token) {
+            return res.status(400).json({ message: "Token is missing" });
+        }
+
+        try { 
+            const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+            const { user_id, provider_id, sub_cat_id } = decoded;
+            console.log('Decoded token: ', decoded);
+            ProviderOdditPaymentStatusService(user_id, provider_id, sub_cat_id, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    return res.status(500).json({ message: "Internal Server Error" });
+                }
+
+                return res.status(200).json({ message: "Payment status updated successfully", result });
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
         }
     }
 
