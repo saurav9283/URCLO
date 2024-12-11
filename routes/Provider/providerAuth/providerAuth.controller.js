@@ -306,7 +306,7 @@ module.exports = {
                     if (err) reject(err);
                     resolve(result && result[0]);
                 });
-            });
+            }); 
             if (!provider) {
                 return res.status(404).json({ message: "Email not registered" });
             }
@@ -316,7 +316,7 @@ module.exports = {
             if (!(await bcrypt.compare(password, provider.password))) {
                 return res.status(400).json({ message: "Invalid password" });
             }
-            return res.status(200).json({ message: "Login successful",provider_id:provider.id });
+            return res.status(200).json({ message: "Login successful",provider_id:provider.id,name:provider.name, email:provider.email });
         }
         if (phone) {
             const provider = await new Promise((resolve, reject) => {
@@ -334,7 +334,7 @@ module.exports = {
             if (!(await bcrypt.compare(password, provider.password))) {
                 return res.status(400).json({ message: "Invalid password" });
             }
-            return res.status(200).json({ message: "Login successful", provider_id:provider.id });
+            return res.status(200).json({ message: "Login successful", provider_id:provider.id,name:provider.name,phone:provider.phone });
         }
     },
     providerForgorPassword: async (req, res) => {
