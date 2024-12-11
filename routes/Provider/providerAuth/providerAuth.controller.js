@@ -92,9 +92,9 @@ module.exports = {
             const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,description } = req.body;
             console.log('req.body: ', req.body);
 
-            // if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price , !description) {
-            //     return res.status(400).json({ message: "All fields are required" });
-            // }
+            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price , !description) {
+                return res.status(400).json({ message: "All fields are required" });
+            }
 
 
             if (age < 18 || age > 60) {
@@ -127,7 +127,7 @@ module.exports = {
             let hashedPassword = await bcrypt.hash(password, 10);
             const otp = Math.floor(100000 + Math.random() * 900000);
             console.log('otp: ', otp);
-
+ 
             const providerImage = req.files?.providerImage?.[0]?.path;
             console.log('providerImage: ', providerImage);
             // const images = req.files?.images?.map((file) => file.path);
@@ -138,11 +138,12 @@ module.exports = {
 
             const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
             const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}` );
+            console.log('imageUrls: ', imageUrls);
             // const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
 
-            // if (!providerImage || !images || images.length === 0) {
-            //     return res.status(400).json({ message: "Provider image and service images are required." });
-            // }
+            if (!providerImage || !images || images.length === 0) {
+                return res.status(400).json({ message: "Provider image and service images are required." });
+            }
 
 
             // Data for `providers` table

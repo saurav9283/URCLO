@@ -17,7 +17,8 @@ module.exports = {
                 .replace('<IsserviceDone>', 0)
                 .replace('<serviceStartTime>' , null)
                 .replace('<serviceEndTime>' , null)
-                .replace('<Acceptance_Status>' , 0);
+                .replace('<Acceptance_Status>' , 0)
+                .replace('<Payment_Status>', 0) 
 
             console.log('create_order: ', create_order);
 
@@ -29,7 +30,7 @@ module.exports = {
                 const fetchAvailableTimeQuery = process.env.fetchAvailableTimeQuery
                     .replace('<providerId>', provider_id)
                     .replace('<sub_cat_id>', sub_cat_id);
-                // console.log('fetchAvailableTimeQuery: ', fetchAvailableTimeQuery);
+                console.log('fetchAvailableTimeQuery: ', fetchAvailableTimeQuery); 
 
                 pool.query(fetchAvailableTimeQuery, (err, fetchResult) => {
                     if (err) {

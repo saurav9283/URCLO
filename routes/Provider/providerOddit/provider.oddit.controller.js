@@ -85,14 +85,14 @@ module.exports = {
         });
     },
     ProviderOdditServiceDetailsController: (req, res) => {
-        const { masterId , cat_id, sub_cat_id } = req.body;
+        const { masterId, cat_id, sub_cat_id } = req.body;
         console.log(masterId, cat_id, sub_cat_id);
         if (!masterId || !cat_id || !sub_cat_id) {
             return res.status(400).json({ message: "Please provide all the details" });
         }
         ProviderOdditGetServiceDetailsService(masterId, cat_id, sub_cat_id, (err, result) => {
             if (err) {
-                console.log('err: ', err); 
+                console.log('err: ', err);
                 res.status(500).json({ message: "Internal Server Error" })
             }
             res.status(200).json({ result })
@@ -134,7 +134,7 @@ module.exports = {
 
             // const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData.providerImage;
             // const imageUrls = images.length > 0 ? images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`) : existingData.images_details;
-            const images = existingData.images_details ? JSON.parse(existingData.images_details) : [];
+            const images = existingData.images_details ? JSON.parse(existingData?.images_details) : [];
 
             if (image1) {
                 images[0] = `${req.protocol}://${req.get('host')}/images/${path.basename(image1)}`;
@@ -145,7 +145,7 @@ module.exports = {
             if (image3) {
                 images[2] = `${req.protocol}://${req.get('host')}/images/${path.basename(image3)}`;
             }
-            const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData.providerImage;
+            const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData?.providerImage;
 
 
 
@@ -164,9 +164,9 @@ module.exports = {
 
             const serviceData = {
                 masterId,
-                cat_id,
+                cat_id, 
                 sub_cat_id,
-                availableTime,
+                availableTime : JSON.stringify(availableTime),
                 price,
                 description,
                 images,
@@ -226,7 +226,7 @@ module.exports = {
             return res.status(400).json({ message: "Token is missing" });
         }
 
-        try { 
+        try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
             const { user_id, provider_id, sub_cat_id } = decoded;
             console.log('Decoded token: ', decoded);

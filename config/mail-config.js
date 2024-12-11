@@ -2,10 +2,11 @@ require('dotenv').config();
 module.exports = {
     "authType":process.env.MAIL_AUTH || "noAuth",
     "defaultMailer": "smtp",
-    "mailers": {
+    "mailers": { 
         "smtp": {
             host: process.env.MAIL_HOST,
-            port: process.env.MAIL_PORT 
+            port: process.env.MAIL_PORT,
+            secure: true, 
         },
     },
     "auth":{
