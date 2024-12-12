@@ -424,6 +424,7 @@ module.exports = {
                 }
 
                 const userEmail = userResult[0].email;
+                console.log('userEmail: ', userEmail);
                 const userName = userResult[0].name;
 
                 // Check if service is done and payment status
@@ -466,7 +467,7 @@ module.exports = {
                             data: { userName, paymentLink, amount },
                         };
                         await sendEmail(emailPayload);
-                        return callback(null, { message: "Job approved and email sent for payment" });
+                        return callback(null, {status: true, message: "Job approved and email sent for payment" });
                     } else if (AcceptanceStatus === 2) {
                         // Send email for cancellation
                         const emailPayload = {
@@ -477,7 +478,7 @@ module.exports = {
                             data: { userName },
                         };
                         await sendEmail(emailPayload);
-                        return callback(null, { message: "Job cancelled and email sent to user" });
+                        return callback(null, { status: false,message: "Job cancelled and email sent to user" });
                     } else {
                         return callback(null, { message: "Job status updated" });
                     }
