@@ -1,6 +1,6 @@
 const pool = require('../../../config/database');
 const moment = require('moment');
-const { signIn } = require('../../../lib/web.notification.type');
+const { signIn, orderAccepted } = require('../../../lib/web.notification.type');
 
 module.exports = {
     notificationService: async (userId, userName) => {
@@ -91,7 +91,7 @@ module.exports = {
             console.error("Notification service error:", error);
             throw error;
         }
-    },
+    }, 
     getCountNotify: async (user_id, callback) => {
         try {
             if (!user_id) {
@@ -110,5 +110,41 @@ module.exports = {
             console.error("Notification service error:", error);
             throw error;
         }
+    },
+    updateOnOrderNotificationService: async (user_id,providerName) => {
+        try {
+            
+            const OrderAcceptance = orderAccepted.sms.replace('[PROVIDER_NAME]', providerName);
+            const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+    
+            const payload = {
+                user_id,
+                content: OrderAcceptance,
+                content_code: orderAccepted.code, 
+                type: 'orderAccepted',
+                createdon: currentDateTime,
+            }; 
+    
+            const query = process.env.INSERT_ORDER_ACCEPTANCE_SMS
+                .replace('<user_id>', payload.user_id)
+                .replace('<content>', payload.content)
+                .replace('<content_code>', payload.content_code)
+                .replace('<type>', payload.type)
+                .replace('<createdon>', payload.createdon);
+    
+            // Execute the query
+            const results = await new Promise((resolve, reject) => {
+                pool.query(query, (error, results) => {
+                    if (error) {
+                        console.error('Error executing query:', error);
+                        return reject(error);
+                    }
+                    resolve(results);
+                }); 
+            });
+            } catch (error) {
+            console.error('Error in updateOnOrderNotificationService:', error);
+            throw error;
+        }
     }
-};
+}

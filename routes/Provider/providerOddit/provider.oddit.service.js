@@ -3,6 +3,7 @@ const moment = require('moment');
 const { providerNotifyStartService, providerNotifyEndService } = require("../providerNotify/provider.notify.service.js");
 const { sendEmail } = require("../../../services/email-service.js");
 const jwt = require('jsonwebtoken');
+const { notificationService, updateOnOrderNotificationService } = require("../../User/userNotification/user.notification.service.js");
 
 module.exports = {
     ProviderOdditLocationService: (city, sub_cat_id, callback) => {
@@ -163,7 +164,7 @@ module.exports = {
     },
     ProviderOdditGetDetailsService: (provider_id, callback) => {
         const providerDetails = process.env.GET_PROVIDER_DETAILS
-            .replace('<providerId>', provider_id); 
+            .replace('<providerId>', provider_id);
         // console.log('providerDetails: ', providerDetails);
         pool.query(providerDetails, [], (err, result) => {
             if (err) {
@@ -193,7 +194,7 @@ module.exports = {
             const getMasterCategoryNameQuery = `SELECT masterName FROM mastercategory WHERE masterId = ?`;
             const getCategoryNameQuery = `SELECT cat_name FROM tbl_cat WHERE cat_id = ?`;
             const getSubCategoryNameQuery = `SELECT sub_cat_name FROM tbl_sub_cat WHERE sub_cat_id = ?`;
-  
+
             pool.query(getMasterCategoryNameQuery, [masterId], (err, masterCategoryResult) => {
                 console.log('masterCategoryResult: ', masterCategoryResult);
                 if (err) {
@@ -238,12 +239,12 @@ module.exports = {
                             subCategoryName
                         };
 
-                     return callback(null, response);
+                        return callback(null, response);
                     });
                 });
             });
         });
-    }  , 
+    },
     getProviderDetails: (providerId, callback) => {
         const query = process.env.GET_PROVIDER_DETAILS_IMages.replace('<providerId>', providerId);
         console.log('query: ', query);
@@ -394,98 +395,104 @@ module.exports = {
     //     });
     // },
 
-    ProviderOdditApprovalService: (provider_id, user_id, AcceptanceStatus, sub_cat_id, callback) => {
-        const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
-            .replace('<provider_id>', provider_id)
-            .replace('<user_id>', user_id)
-            .replace('<AcceptanceStatus>', AcceptanceStatus)
-            .replace('<sub_cat_id>', sub_cat_id);
-        console.log('providerApprovalQuery: ', providerApprovalQuery);
+    // ProviderOdditApprovalService: (provider_id, user_id, AcceptanceStatus, sub_cat_id, callback) => {
+    //     const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
+    //         .replace('<provider_id>', provider_id)
+    //         .replace('<user_id>', user_id)
+    //         .replace('<AcceptanceStatus>', AcceptanceStatus)
+    //         .replace('<sub_cat_id>', sub_cat_id);
+    //     console.log('providerApprovalQuery: ', providerApprovalQuery);
 
-        pool.query(providerApprovalQuery, [], (err, result) => {
-            if (err) {
-                console.log(err);
-                return callback(err);
-            }
-            if (result.affectedRows === 0) {
-                return callback(null, { message: "No jobs found" });
-            }
+    //     pool.query(providerApprovalQuery, [], (err, result) => {
+    //         if (err) {
+    //             console.log(err);
+    //             return callback(err);
+    //         }
+    //         if (result.affectedRows === 0) {
+    //             return callback(null, { message: "No jobs found" });
+    //         }
 
-            // Fetch user email and name for sending email
-            const getUserDetailsQuery = process.env.getUserDetailsQuery
-                .replace('<user_id>', user_id);
-            pool.query(getUserDetailsQuery, async (err, userResult) => {
-                if (err) {
-                    console.log(err);
-                    return callback(err);
-                }
-                if (userResult.length === 0) {
-                    return callback(null, { message: "User not found" });
-                }
+    //         // Fetch user email and name for sending email
+    //         const getUserDetailsQuery = process.env.getUserDetailsQuery
+    //             .replace('<user_id>', user_id);
+    //         pool.query(getUserDetailsQuery, async (err, userResult) => {
+    //             if (err) {
+    //                 console.log(err);
+    //                 return callback(err);
+    //             }
+    //             if (userResult.length === 0) {
+    //                 return callback(null, { message: "User not found" });
+    //             }
 
-                const userEmail = userResult[0].email;
-                console.log('userEmail: ', userEmail);
-                const userName = userResult[0].name;
+    //             const userEmail = userResult[0].email;
+    //             console.log('userEmail: ', userEmail);
+    //             const userName = userResult[0].name;
 
-                // Check if service is done and payment status
-                const checkServiceQuery = `
-                    SELECT ub.IsserviceDone, ub.Payment_Status, ub.quantity, sc.standard_price 
-                    FROM user_buyer ub 
-                    JOIN tbl_sub_cat sc ON ub.sub_cat_id = sc.sub_cat_id
-                    WHERE ub.user_id = ? AND ub.provider_id = ? AND ub.sub_cat_id = ?`;
-                pool.query(checkServiceQuery, [user_id, provider_id, sub_cat_id], async (err, serviceResult) => {
-                    console.log('serviceResult: ', serviceResult);
-                    if (err) {
-                        console.log(err);
-                        return callback(err);
-                    }
-                    if(serviceResult.length === 0) {
-                        return callback(null, { message: "No service found" });
-                    }
-                    if(serviceResult[0].IsserviceDone === 1) {
-                        return callback(null, { message: "Service is already done" });
-                    }
-                    if(serviceResult[0].Payment_Status === 1) {
-                        return callback(null, { message: "Payment is already made" });
-                    }
-                    // if (serviceResult.length === 0 || serviceResult[0].IsserviceDone !== 0 || serviceResult[0].Payment_Status !== 0) {
-                    //     return callback(null, { message: "Service is already done or payment is already made" });
-                    // }
+    //             // Check if service is done and payment status
+    //             const checkServiceQuery = `
+    //                 SELECT ub.IsserviceDone, ub.Payment_Status, ub.quantity, sc.standard_price 
+    //                 FROM user_buyer ub 
+    //                 JOIN tbl_sub_cat sc ON ub.sub_cat_id = sc.sub_cat_id
+    //                 WHERE ub.user_id = ? AND ub.provider_id = ? AND ub.sub_cat_id = ?`;
+    //             pool.query(checkServiceQuery, [user_id, provider_id, sub_cat_id], async (err, serviceResult) => {
+    //                 console.log('serviceResult: ', serviceResult);
+    //                 if (err) {
+    //                     console.log(err);
+    //                     return callback(err);
+    //                 }
+    //                 if (serviceResult.length === 0) {
+    //                     return callback(null, { message: "No service found" });
+    //                 }
+    //                 if (serviceResult[0].IsserviceDone === 1) {
+    //                     return callback(null, { message: "Service is already done" });
+    //                 }
+    //                 if (serviceResult[0].Payment_Status === 1) {
+    //                     return callback(null, { message: "Payment is already made" });
+    //                 }
+    //                 // if (serviceResult.length === 0 || serviceResult[0].IsserviceDone !== 0 || serviceResult[0].Payment_Status !== 0) {
+    //                 //     return callback(null, { message: "Service is already done or payment is already made" });
+    //                 // }
 
-                    const amount = serviceResult[0].quantity * serviceResult[0].standard_price;
+    //                 const amount = serviceResult[0].quantity * serviceResult[0].standard_price;
 
-                    if (AcceptanceStatus === 1) {
-                        // Send email for payment
-                        const token = jwt.sign({ user_id, provider_id, sub_cat_id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
-                        const paymentLink = `${process.env.PAYMENT_URL}?token=${token}`;
+    //                 if (AcceptanceStatus === 1) {
+    //                     // Send email for payment
+    //                     const token = jwt.sign({ user_id, provider_id, sub_cat_id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+    //                     const paymentLink = `${process.env.PAYMENT_URL}?token=${token}`;
 
-                        const emailPayload = {
-                            from: process.env.MAIL_SENDER_EMAIL,
-                            to: userEmail,
-                            subject: 'Order Accepted - Payment Required',
-                            template: 'orderAccepted.ejs',
-                            data: { userName, paymentLink, amount },
-                        };
-                        await sendEmail(emailPayload);
-                        return callback(null, {status: true, message: "Job approved and email sent for payment" });
-                    } else if (AcceptanceStatus === 2) {
-                        // Send email for cancellation
-                        const emailPayload = {
-                            from: process.env.MAIL_SENDER_EMAIL,
-                            to: userEmail,
-                            subject: 'Order Cancelled',
-                            template: 'orderCancelled.ejs',
-                            data: { userName },
-                        };
-                        await sendEmail(emailPayload);
-                        return callback(null, { status: false,message: "Job cancelled and email sent to user" });
-                    } else {
-                        return callback(null, { message: "Job status updated" });
-                    }
-                });
-            });
-        });
-    },
+    //                     const emailPayload = {
+    //                         from: process.env.MAIL_SENDER_EMAIL,
+    //                         to: userEmail,
+    //                         subject: 'Order Accepted - Payment Required',
+    //                         template: 'orderAccepted.ejs',
+    //                         data: { userName, paymentLink, amount },
+    //                     };
+    //                     try {
+    //                         await sendEmail(emailPayload);
+    //                         await updateOnOrderNotificationService(user_id, providerName);
+    //                     } catch (error) {
+    //                         console.error('Error sending email:', error);
+    //                     }
+    //                     return callback(null, { status: true, message: "Job approved and email sent for payment" });
+    //                 } else if (AcceptanceStatus === 2) {
+    //                     // Send email for cancellation
+    //                     const emailPayload = {
+    //                         from: process.env.MAIL_SENDER_EMAIL,
+    //                         to: userEmail,
+    //                         subject: 'Order Cancelled',
+    //                         template: 'orderCancelled.ejs',
+    //                         data: { userName },
+    //                     };
+    //                     await sendEmail(emailPayload);
+
+    //                     return callback(null, { status: false, message: "Job cancelled and email sent to user" });
+    //                 } else {
+    //                     return callback(null, { message: "Job status updated" });
+    //                 }
+    //             });
+    //         });
+    //     });
+    // },
 
     // ProviderOdditPaymentStatusService: (user_id, provider_id, sub_cat_id, callback) => {
     //     const checkServiceStatusQuery = process.env.CHECK_SERVICE_STATUS
@@ -542,6 +549,113 @@ module.exports = {
     //     });
     // }
 
+    ProviderOdditApprovalService: (provider_id, user_id, AcceptanceStatus, sub_cat_id, callback) => {
+        const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
+            .replace('<provider_id>', provider_id)
+            .replace('<user_id>', user_id)
+            .replace('<AcceptanceStatus>', AcceptanceStatus)
+            .replace('<sub_cat_id>', sub_cat_id);
+        console.log('providerApprovalQuery: ', providerApprovalQuery);
+
+        pool.query(providerApprovalQuery, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            if (result.affectedRows === 0) {
+                return callback(null, { message: "No jobs found" });
+            }
+
+            // Fetch user email and name for sending email
+            const getUserDetailsQuery = process.env.getUserDetailsQuery
+                .replace('<user_id>', user_id);
+            pool.query(getUserDetailsQuery, async (err, userResult) => {
+                if (err) {
+                    console.log(err);
+                    return callback(err);
+                }
+                if (userResult.length === 0) {
+                    return callback(null, { message: "User not found" });
+                }
+
+                const userEmail = userResult[0].email;
+                const userName = userResult[0].name;
+
+                // Fetch provider name
+                const getProviderNameQuery = process.env.GET_PROVIDER_NAME_QUERY
+                    .replace('<provider_id>', provider_id);
+                pool.query(getProviderNameQuery, async (err, providerResult) => {
+                    if (err) {
+                        console.log(err);
+                        return callback(err);
+                    }
+                    if (providerResult.length === 0) {
+                        return callback(null, { message: "Provider not found" });
+                    }
+
+                    const providerName = providerResult[0].name; 
+
+                    // Check if service is done and payment status
+                    const checkServiceQuery = process.env.checkServiceQuery;
+                    pool.query(checkServiceQuery, [user_id, provider_id, sub_cat_id], async (err, serviceResult) => {
+                        console.log('serviceResult: ', serviceResult);
+                        if (err) {
+                            console.log(err);
+                            return callback(err);
+                        }
+                        if (serviceResult.length === 0) {
+                            return callback(null, { message: "No service found" });
+                        }
+                        if (serviceResult[0].IsserviceDone === 1) {
+                            return callback(null, { message: "Service is already done" });
+                        }
+                        if (serviceResult[0].Payment_Status === 1) {
+                            return callback(null, { message: "Payment is already made" });
+                        }
+
+                        const amount = serviceResult[0].quantity * serviceResult[0].standard_price;
+
+                        if (AcceptanceStatus === 1) {
+                            // Send email for payment
+                            const token = jwt.sign({ user_id, provider_id, sub_cat_id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+                            const paymentLink = `${process.env.PAYMENT_URL}?token=${token}`;
+
+                            const emailPayload = {
+                                from: process.env.MAIL_SENDER_EMAIL,
+                                to: userEmail,
+                                subject: 'Order Accepted - Payment Required',
+                                template: 'orderAccepted.ejs',
+                                data: { userName, paymentLink, amount }, 
+                            };
+                            try {
+                                await sendEmail(emailPayload);
+                                // console.log('user_id, providerName: ', user_id, providerName);
+                                await updateOnOrderNotificationService(user_id, providerName);
+                            } catch (error) {
+                                console.error('Error sending email:', error);
+                            }
+                            return callback(null, { status: true, message: "Job approved and email sent for payment" });
+                        } else if (AcceptanceStatus === 2) {
+                            // Send email for cancellation
+                            const emailPayload = {
+                                from: process.env.MAIL_SENDER_EMAIL,
+                                to: userEmail,
+                                subject: 'Order Cancelled',
+                                template: 'orderCancelled.ejs',
+                                data: { userName, providerName },
+                            };
+                            await sendEmail(emailPayload);
+
+                            return callback(null, { status: false, message: "Job cancelled and email sent to user" });
+                        } else {
+                            return callback(null, { message: "Job status updated" });
+                        }
+                    });
+                });
+            });
+        });
+    },
+
     ProviderOdditPaymentStatusService: (user_id, provider_id, sub_cat_id, callback) => {
         const checkServiceStatusQuery = process.env.CHECK_SERVICE_STATUS
             .replace('<provider_id>', provider_id)
@@ -586,8 +700,8 @@ module.exports = {
 
                 // Fetch user email from tbl_user
                 const getUserEmailQuery = process.env.GET_USER_EMAIL_QUERY
-                .replace('<user_id>', user_id);
-                console.log('getUserEmailQuery: ', getUserEmailQuery); 
+                    .replace('<user_id>', user_id);
+                console.log('getUserEmailQuery: ', getUserEmailQuery);
                 pool.query(getUserEmailQuery, async (err, userResult) => {
                     if (err) {
                         console.log(err);
