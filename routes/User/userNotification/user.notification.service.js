@@ -112,6 +112,7 @@ module.exports = {
         }
     },
     updateOnOrderNotificationService: async (user_id,providerName) => {
+        console.log('user_id,providerName: ', user_id,providerName);
         try {
             
             const OrderAcceptance = orderAccepted.sms.replace('[PROVIDER_NAME]', providerName);

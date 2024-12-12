@@ -588,7 +588,7 @@ module.exports = {
                     if (err) {
                         console.log(err);
                         return callback(err);
-                    }
+                    } 
                     if (providerResult.length === 0) {
                         return callback(null, { message: "Provider not found" });
                     }

@@ -6,24 +6,20 @@ module.exports = {
             const { user_id, orders } = req.body;
             console.log('user_id, orders:', user_id, orders);
 
-            // Validate input
             if (!user_id || !Array.isArray(orders) || orders.length === 0) {
                 return res.status(400).json({ message: "Invalid input: User ID and orders are required." });
             }
 
-            // Process each order
             const orderPromises = orders?.map(async (order) => {
                 const { sub_cat_id, provider_id, quantity, schedule_time } = order;
                 console.log('schedule_time: ', schedule_time);
                 console.log('Processing order:', sub_cat_id, provider_id, quantity);
 
-                // Validate order details
                 if (!sub_cat_id || !provider_id || !quantity) {
                     return Promise.reject({ message: "Invalid order details", order });
                 }
 
                 try {
-                    // Process order and notify provider
                     const result = await new Promise((resolve, reject) => {
                         UserBuyerService(user_id, sub_cat_id, provider_id, quantity, schedule_time, async (err, result) => {
                             if (err) {
@@ -64,7 +60,7 @@ module.exports = {
             const rejectedResults = results.filter(result => result.status === "rejected");
             if (rejectedResults.length > 0) {
                 // Clean up by deleting the buyer record in case of error
-                const { sub_cat_id, provider_id } = orders[0];  // Assuming you want to delete based on the first order
+                const { sub_cat_id, provider_id } = orders[0];  
                 DeletebuyerRecode(user_id, sub_cat_id, provider_id, (err, result) => {
                     if (err) {
                         console.error("Error deleting order:", err);
