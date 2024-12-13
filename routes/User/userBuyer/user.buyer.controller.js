@@ -31,6 +31,7 @@ module.exports = {
                                 return reject({ message: "No available time found", order });
                             }
 
+                          
                             try {
                                 await providerNotifyService(user_id, provider_id,schedule_time);
                                 return resolve(result);
@@ -72,7 +73,7 @@ module.exports = {
                 });
             } else {
                 return res.status(200).json({
-                    message: "All services bought successfully"
+                    message: "All services bought successfully",results
                 });
             }
 
