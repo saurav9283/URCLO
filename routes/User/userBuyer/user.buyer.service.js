@@ -3,6 +3,7 @@ const moment = require('moment');
 
 module.exports = {
     UserBuyerService: (user_id, sub_cat_id, provider_id, quantity, schedule_time, callback) => {
+        console.log('schedule_time: ', schedule_time); 
         try {
             const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
 
@@ -13,12 +14,12 @@ module.exports = {
                 .replace('<provider_id>', provider_id)
                 .replace('<quantity>', quantity)
                 .replace('<createdon>', currentDateTime)
-                .replace('<schedule_time>', schedule_time)
+                .replace('<schedule_time>', JSON.stringify(schedule_time))
                 .replace('<IsserviceDone>', 0)
-                .replace('<serviceStartTime>' , null)
-                .replace('<serviceEndTime>' , null)
-                .replace('<Acceptance_Status>' , 0)
-                .replace('<Payment_Status>', 0) 
+                .replace('<serviceStartTime>', null)
+                .replace('<serviceEndTime>', null)
+                .replace('<Acceptance_Status>', 0)
+                .replace('<Payment_Status>', 0);
 
             console.log('create_order: ', create_order);
 
@@ -30,7 +31,7 @@ module.exports = {
                 const fetchAvailableTimeQuery = process.env.fetchAvailableTimeQuery
                     .replace('<providerId>', provider_id)
                     .replace('<sub_cat_id>', sub_cat_id);
-                console.log('fetchAvailableTimeQuery: ', fetchAvailableTimeQuery); 
+                console.log('fetchAvailableTimeQuery: ', fetchAvailableTimeQuery);
 
                 pool.query(fetchAvailableTimeQuery, (err, fetchResult) => {
                     if (err) {
@@ -38,10 +39,9 @@ module.exports = {
                         return callback(err);
                     }
                     console.log('fetchResult.length: ', fetchResult.length);
-                    if(fetchResult.length === 0) {
+                    if (fetchResult.length === 0) {
                         return callback(null, "No available time found");
                     }
-                    // console.log('fetchResult: ', fetchResult);
 
                     let availableTimeString = fetchResult[0]?.availableTime;
                     availableTimeString = availableTimeString.replace(/([{\[,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
@@ -49,17 +49,19 @@ module.exports = {
 
                     try {
                         availableTime = JSON.parse(availableTimeString);
-                        // console.log('availableTime: ', availableTime);
                     } catch (parseError) {
                         console.log("Error parsing availableTime: ", parseError);
                         return callback(parseError);
                     }
 
-                    availableTime = availableTime?.map(slot => {
-                        if (slot.time === schedule_time) {
-                            slot.state = 1;
-                        }
-                        return slot;
+                    // Update the state for the specified date and time
+                    schedule_time.forEach(schedule => {
+                        availableTime = availableTime.map(slot => {
+                            if (slot.date === schedule.date && slot.startDateTime === schedule.startDateTime) {
+                                slot.state = 1;
+                            }
+                            return slot;
+                        });
                     });
 
                     const updatedAvailableTime = JSON.stringify(availableTime);
@@ -83,7 +85,7 @@ module.exports = {
             return callback(error);
         }
     },
-    DeletebuyerRecode: (user_id,sub_cat_id,provider_id, callback) => {
+    DeletebuyerRecode: (user_id, sub_cat_id, provider_id, callback) => {
         try {
             const deleteOrderQuery = process.env.DELETE_ORDER_QUERY
                 .replace('<user_id>', user_id)
@@ -103,4 +105,4 @@ module.exports = {
             return callback(error);
         }
     }
-};
+}; 

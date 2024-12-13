@@ -59,22 +59,18 @@ module.exports = {
             // Check if the first result is rejected (or any rejection in the results)
             const rejectedResults = results.filter(result => result.status === "rejected");
             if (rejectedResults.length > 0) {
-                // Clean up by deleting the buyer record in case of error
                 const { sub_cat_id, provider_id } = orders[0];  
                 DeletebuyerRecode(user_id, sub_cat_id, provider_id, (err, result) => {
                     if (err) {
                         console.error("Error deleting order:", err);
                         return res.status(500).json({ message: "Internal Server Error during deletion", error: err });
                     }
-
-                    // Respond with the error details for rejected orders
                     return res.status(400).json({
                         message: "No orders to process",
                         errors: rejectedResults,
                     });
                 });
             } else {
-                // If all orders processed successfully
                 return res.status(200).json({
                     message: "All services bought successfully"
                 });
@@ -83,16 +79,12 @@ module.exports = {
         } catch (error) {
             console.error("Internal Server Error:", error);
 
-            // In case of internal server error, delete the order record as a cleanup step
-            const { sub_cat_id, provider_id } = orders[0];  // Assuming you want to delete based on the first order
-            // DeletebuyerRecode(user_id, sub_cat_id, provider_id, (err, result) => {
-            //     if (err) {
-            //         console.error("Error deleting order:", err);
-            //         return res.status(500).json({ message: "Internal Server Error during deletion", error: err });
-            //     }
-
+            const { sub_cat_id, provider_id } = orders[0]; 
+    
             return res.status(500).json({ message: "Internal Server Error", error });
-            // });
         }
     },
+
+
 };
+ 
