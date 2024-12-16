@@ -4,6 +4,7 @@ const { providerNotifyStartService, providerNotifyEndService } = require("../pro
 const { sendEmail } = require("../../../services/email-service.js");
 const jwt = require('jsonwebtoken');
 const { notificationService, updateOnOrderNotificationService } = require("../../User/userNotification/user.notification.service.js");
+const extendAvailableTime = require("../../../lib/extendAvailableTime.js");
 
 module.exports = {
     ProviderOdditLocationService: (city, sub_cat_id, callback) => {
@@ -256,57 +257,173 @@ module.exports = {
             return callback(null, result);
         });
     },
+    // ProviderOdditEditService: async (providerData, serviceData, callback) => {
+    //     console.log('serviceData: ', serviceData);
+    //     const existingAvailableTimeQuery = process.env.GET_PROVIDER_BY_ID
+    //         .replace('<provider_id>', providerData.providerId);
+
+    //     pool.query(existingAvailableTimeQuery, [], async (err, providerfreeTime) => {
+    //         if (err) { 
+    //             console.log(err);
+    //             return callback(err); 
+    //         }
+    //         if (providerfreeTime.length === 0) {
+    //             return callback(null, { message: "No provider found" });
+    //         }
+
+    //         console.log('providerfreeTime: ', providerfreeTime[0].availableTime);
+    //         const oldTimeSlot = JSON.parse(providerfreeTime[0].availableTime);
+    //         console.log('oldTimeSlot: ', oldTimeSlot);
+
+    //         const providerQuery = process.env.UPDATE_PROVIDER_DETAILS
+    //             .replace('<providerId>', providerData.providerId)
+    //             .replace('<name>', providerData.name)
+    //             .replace('<email>', providerData.email)
+    //             .replace('<age>', providerData.age)
+    //             .replace('<DOB>', providerData.DOB)
+    //             .replace('<phone>', providerData.phone)
+    //             .replace('<address>', providerData.address)
+    //             .replace('<documentNumber>', providerData.documentNumber)
+    //             .replace('<documentType>', providerData.documentType);
+    //         console.log('providerQuery: ', providerQuery);
+    //         pool.query(providerQuery, (err, result) => {
+    //             if (err) {
+    //                 console.error("Error updating provider data:", err.message);
+    //                 return callback(err);
+    //             }
+
+    //             // Parse new available time
+    //             let newTimeSlots;
+    //             try {
+    //                 newTimeSlots = JSON.parse(serviceData.newAvailableTime);
+    //                 console.log('newTimeSlots: ', newTimeSlots);
+    //             } catch (parseError) {
+    //                 console.error("Error parsing newTimeSlots:", parseError.message);
+    //                 return callback(parseError);
+    //             }
+
+    //             console.log('newTimeSlots: ', newTimeSlots);
+
+    //             // Ensure newTimeSlots is an array 
+    //             if (!Array.isArray(newTimeSlots)) {
+    //                 console.error("Error: newTimeSlots is not an array, initializing as empty array.");
+    //                 return callback(new Error("newTimeSlots is not an array")); 
+                    
+    //              }
+
+    //             // Extend available time with new time slots
+    //             const updatedAvailableTime = extendAvailableTime(oldTimeSlot, newTimeSlots);
+    //             console.log('updatedAvailableTime: ', updatedAvailableTime);
+    //             serviceData.availableTime = JSON.stringify(updatedAvailableTime);
+
+    //             const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
+    //                 .replace('<providerId>', providerData.providerId)
+    //                 .replace('<masterId>', serviceData.masterId)
+    //                 .replace('<cat_id>', serviceData.cat_id)
+    //                 .replace('<sub_cat_id>', serviceData.sub_cat_id)
+    //                 .replace('<availableTime>', serviceData.availableTime)
+    //                 .replace('<price>', serviceData.price)
+    //                 .replace('<images_details>', JSON.stringify(serviceData.images))
+    //                 .replace('<description>', serviceData.description)
+    //                 .replace('<providerImage>', serviceData.providerImage);
+    //             console.log('serviceQuery: ', serviceQuery);
+
+    //             pool.query(serviceQuery, async (err, result) => {
+    //                 if (err) {
+    //                     console.error("Error updating service data:", err.message);
+    //                     return callback(err);
+    //                 }
+    //                 if (result.affectedRows > 0) {
+    //                     const emailPayload = {
+    //                         from: process.env.MAIL_SENDER_EMAIL,
+    //                         to: providerData.email,
+    //                         subject: 'Profile Updated Successfully',
+    //                         template: 'providerDetailUpdate.ejs',
+    //                         data: { name: providerData.name },
+    //                     };
+    //                     await sendEmail(emailPayload); 
+    //                 }
+    //                 callback(null, "Data updated successfully.");
+    //             });
+    //         });
+    //     });
+    // },
+
     ProviderOdditEditService: async (providerData, serviceData, callback) => {
         console.log('serviceData: ', serviceData);
-        const providerQuery = process.env.UPDATE_PROVIDER_DETAILS
-            .replace('<providerId>', providerData.providerId)
-            .replace('<name>', providerData.name)
-            .replace('<email>', providerData.email)
-            .replace('<age>', providerData.age)
-            .replace('<DOB>', providerData.DOB)
-            .replace('<phone>', providerData.phone)
-            .replace('<address>', providerData.address)
-            .replace('<documentNumber>', providerData.documentNumber)
-            .replace('<documentType>', providerData.documentType);
-        console.log('providerQuery: ', providerQuery);
-        pool.query(providerQuery, (err, result) => {
+        const existingAvailableTimeQuery = process.env.GET_PROVIDER_BY_ID
+            .replace('<provider_id>', providerData.providerId);
+
+        pool.query(existingAvailableTimeQuery, [], async (err, providerfreeTime) => {
             if (err) {
-                console.error("Error updating provider data:", err.message);
-                return callback(err);
+                console.log(err);
+                return callback(err); 
+            }
+            if (providerfreeTime.length === 0) {
+                return callback(null, { message: "No provider found" });
             }
 
-            const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
-                .replace('<providerId>', providerData.providerId)
-                .replace('<masterId>', serviceData.masterId)
-                .replace('<cat_id>', serviceData.cat_id)
-                .replace('<sub_cat_id>', serviceData.sub_cat_id)
-                .replace('<availableTime>', serviceData.availableTime)
-                .replace('<price>', serviceData.price)
-                .replace('<images_details>', JSON.stringify(serviceData.images))
-                .replace('<description>', serviceData.description)
-                .replace('<providerImage>', serviceData.providerImage);
-            console.log('serviceQuery: ', serviceQuery);
+            console.log('providerfreeTime: ', providerfreeTime[0].availableTime);
+            const oldTimeSlot = JSON.parse(providerfreeTime[0].availableTime);
+            console.log('oldTimeSlot: ', oldTimeSlot);
 
-            pool.query(serviceQuery, async (err, result) => {
+            const providerQuery = process.env.UPDATE_PROVIDER_DETAILS
+                .replace('<providerId>', providerData.providerId)
+                .replace('<name>', providerData.name)
+                .replace('<email>', providerData.email)
+                .replace('<age>', providerData.age)
+                .replace('<DOB>', providerData.DOB)
+                .replace('<phone>', providerData.phone)
+                .replace('<address>', providerData.address)
+                .replace('<documentNumber>', providerData.documentNumber)
+                .replace('<documentType>', providerData.documentType);
+            console.log('providerQuery: ', providerQuery);
+            pool.query(providerQuery, (err, result) => {
                 if (err) {
-                    console.error("Error updating service data:", err.message);
+                    console.error("Error updating provider data:", err.message);
                     return callback(err);
                 }
-                // console.log('result: ', result);
-                if (result.affectedRows > 0) {
-                    const emailPayload = {
-                        from: process.env.MAIL_SENDER_EMAIL,
-                        to: providerData.email,
-                        subject: 'Profile Updated Successfully',
-                        template: 'providerDetailUpdate.ejs',
-                        data: { name: providerData.name },
-                    };
-                    await sendEmail(emailPayload);
-                }
-                callback(null, "Data updated successfully.");
+
+                let newabltime=  JSON.parse(serviceData.newAvailableTime)
+                console.log('newabltime: ', newabltime);
+
+                const updatedAvailableTime = extendAvailableTime(oldTimeSlot, newabltime);
+                console.log('updatedAvailableTime: ', updatedAvailableTime);
+                serviceData.availableTime = JSON.stringify(updatedAvailableTime);
+
+                const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
+                    .replace('<providerId>', providerData.providerId)
+                    .replace('<masterId>', serviceData.masterId)
+                    .replace('<cat_id>', serviceData.cat_id)
+                    .replace('<sub_cat_id>', serviceData.sub_cat_id)
+                    .replace('<availableTime>', serviceData.availableTime)
+                    .replace('<price>', serviceData.price)
+                    .replace('<images_details>', JSON.stringify(serviceData.images))
+                    .replace('<description>', serviceData.description)
+                    .replace('<providerImage>', serviceData.providerImage);
+                console.log('serviceQuery: ', serviceQuery);
+
+                pool.query(serviceQuery, async (err, result) => {
+                    if (err) {
+                        console.error("Error updating service data:", err.message);
+                        return callback(err);
+                    }
+                    if (result.affectedRows > 0) {
+                        const emailPayload = {
+                            from: process.env.MAIL_SENDER_EMAIL,
+                            to: providerData.email,
+                            subject: 'Profile Updated Successfully',
+                            template: 'providerDetailUpdate.ejs',
+                            data: { name: providerData.name },
+                        };
+                        await sendEmail(emailPayload);
+                    }
+                    callback(null, "Data updated successfully.");
+                });
             });
         });
     },
+
     ProviderOdditGetFiggureService: (provider_id, callback) => {
         const providerFiguresQuery = process.env.PROVIDER_FIGURES_QUERY;
 
@@ -588,12 +705,12 @@ module.exports = {
                     if (err) {
                         console.log(err);
                         return callback(err);
-                    } 
+                    }
                     if (providerResult.length === 0) {
                         return callback(null, { message: "Provider not found" });
                     }
 
-                    const providerName = providerResult[0].name; 
+                    const providerName = providerResult[0].name;
 
                     // Check if service is done and payment status
                     const checkServiceQuery = process.env.checkServiceQuery;
@@ -625,7 +742,7 @@ module.exports = {
                                 to: userEmail,
                                 subject: 'Order Accepted - Payment Required',
                                 template: 'orderAccepted.ejs',
-                                data: { userName, paymentLink, amount }, 
+                                data: { userName, paymentLink, amount },
                             };
                             try {
                                 await sendEmail(emailPayload);
@@ -726,8 +843,18 @@ module.exports = {
                 });
             });
         });
+    },
+
+    getProviderByIDService: (providerId, callback) => {
+        const query = process.env.GET_PROVIDER_DETAILS_BY_ID.replace('<provider_id>', providerId);
+        console.log('query: ', query);
+        pool.query(query, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
     }
-
-
 
 }

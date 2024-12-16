@@ -3,11 +3,43 @@ const moment = require('moment');
 const { signIn, orderAccepted } = require('../../../lib/web.notification.type');
 
 module.exports = {
-    notificationService: async (userId, userName) => {
-        // console.log('userId: ', userId);
-        // console.log('signIn: ', signIn);
+    // notificationService: async (userId, userName) => {
+    //     const signInSMS = signIn.sms.replace('[User Name]', userName);
+    //     const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
 
-        // Replace placeholder with actual user name
+    //     try {
+    //         const payload = {
+    //             userId,
+    //             content: signInSMS,
+    //             content_code: signIn.code,
+    //             type: 'signIn',
+    //             createdon: currentDateTime,
+    //         };
+
+    //         const query = process.env.INSERT_SIGN_IN_SMS
+    //             .replace('<user_id>', payload.userId)
+    //             .replace('<content>', payload.content)
+    //             .replace('<content_code>', payload.content_code)
+    //             .replace('<type>', payload.type)
+    //             .replace('<createdon>', payload.createdon);
+
+    //         return new Promise((resolve, reject) => {
+    //             pool.query(query, (error, results) => {
+    //                 if (error) {
+    //                     console.error('Error:', error);
+    //                     return reject(error);
+    //                 }
+    //                 return resolve(results);
+    //             });
+    //         });
+    //     } catch (error) {
+    //         console.error("Notification service error:", error);
+    //         throw error;
+    //     }
+    // },
+    
+    
+    notificationService: async (userId, userName) => {
         const signInSMS = signIn.sms.replace('[User Name]', userName);
         const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
 
@@ -27,7 +59,7 @@ module.exports = {
                 .replace('<type>', payload.type)
                 .replace('<createdon>', payload.createdon);
 
-            return new Promise((resolve, reject) => {
+            await new Promise((resolve, reject) => {
                 pool.query(query, (error, results) => {
                     if (error) {
                         console.error('Error:', error);
@@ -36,11 +68,24 @@ module.exports = {
                     return resolve(results);
                 });
             });
+ 
+            console.log('Notification service success:', payload); 
+            const io = require('../../../app').get('io');
+            io.emit('pushNotification', {
+                userName, 
+                message: signInSMS,
+            });
+
+            console.log("react time notification for user login")
+            return { success: true, message: 'Notification sent successfully' };
+
         } catch (error) {
             console.error("Notification service error:", error);
             throw error;
         }
     },
+
+
     getNotifisationForUser: async (email, phone, callback) => {
         try {
             if (!email && !phone) {

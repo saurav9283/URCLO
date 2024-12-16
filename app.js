@@ -2,12 +2,15 @@ require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+var http = require('http'); 
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
+const socketIO = require('socket.io');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const bodyParser = require('body-parser');
+  
 const UserBuyerRouter = require('./routes/User/userBuyer/user.buyer.router.js');
 const UserRouter = require('./routes/User/userAuth/auth.router.js');
 const UserCartRouter = require('./routes/User/UserCart/user.cart.router.js');
@@ -17,15 +20,27 @@ const userMasterCatRouter = require('./routes/User/userService/user.service.rout
 const ProviderOdditRouter = require('./routes/Provider/providerOddit/provider.oddit.router.js');
 
 var app = express();
+const server = http.createServer(app);
 
-const corsOptions = {
-  origin: 'http://localhost:3000', 
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-  credentials: true, // Allow cookies and credentials
-};
+const io = socketIO(server,{
+  cors: {
+      origin: '*',
+      methods : ['GET','POST'], 
+  }
+})
+ 
+app.set('io', io);  
 
-app.use(cors(corsOptions));
+
+
+// const corsOptions = {
+//   origin: 'http://localhost:3000', 
+//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed methods 
+//   allowedHeaders: ['Content-Type', 'Authorization'], 
+//   credentials: true, 
+// };
+
+app.use(cors("*"));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -37,6 +52,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+io.on('connection', (socket) => {
+  console.log('A client connected:', socket.id);
+
+  socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
+  });
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -68,7 +92,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 const PORT = "4956";
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 })
 

@@ -1,5 +1,5 @@
 const express = require('express');
-const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController, ProviderOdditFiggureController, ProviderOdditApprovalController, ProviderOdditPaymentStatusController, ProviderOdditServiceDetailsController } = require('./provider.oddit.controller');
+const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController, ProviderOdditFiggureController, ProviderOdditApprovalController, ProviderOdditPaymentStatusController, ProviderOdditServiceDetailsController, ProviderOdditByIDController } = require('./provider.oddit.controller');
 const upload = require('../../../lib/uploadFunction');
 
 const router = express.Router();
@@ -20,6 +20,8 @@ router.get('/oddit/provider-figure', ProviderOdditFiggureController)
 
 router.post('/oddit/job-approval' , ProviderOdditApprovalController)
 router.put('/oddit/update-payment-status', ProviderOdditPaymentStatusController);
+
+router.get('/oddit/get-provider-oddit-details', ProviderOdditByIDController);
 
 
 

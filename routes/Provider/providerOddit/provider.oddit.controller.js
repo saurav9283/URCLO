@@ -1,4 +1,4 @@
-const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService } = require("./provider.oddit.service");
+const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService, getProviderByIDService } = require("./provider.oddit.service");
 const path = require('path');
 const jwt = require('jsonwebtoken');
 
@@ -98,23 +98,113 @@ module.exports = {
             res.status(200).json({ result })
         });
     },
+    // ProviderOdditEditController: async (req, res) => {
+    //     try {
+
+    //         const {
+    //             name, email, age, DOB, masterId, cat_id, sub_cat_id,
+    //             phone, address, availableTime, documentNumber, documentType,
+    //             price, description, providerId,newAvailableTime
+    //         } = req.body;
+    //         console.log('req.body: ', req.body);
+
+    //         if (!name || !email || !age || !DOB || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description || !providerId) {
+    //             return res.status(400).json({ message: "Please provide all the details" });
+    //         }
+
+    //         if (age < 18 || age > 60) {
+    //             return res.status(400).json({ message: "You are not legally allowed to work with us." });
+    //         }
+    //         // Fetch existing provider and service data
+    //         const existingData = await new Promise((resolve, reject) => {
+    //             getProviderDetails(providerId, (err, result) => {
+    //                 if (err) reject(err);
+    //                 resolve(result[0]);
+    //             });
+    //         });
+
+    //         // console.log(existingData.providerImage)
+    //         // console.log(existingData.images_details)
+    //         const providerImage = req.files?.providerImage?.[0]?.path;
+    //         console.log('providerImage: ', providerImage);
+    //         const image1 = req.files?.images1?.[0]?.path;
+    //         const image2 = req.files?.images2?.[0]?.path;
+    //         const image3 = req.files?.images3?.[0]?.path;
+    //         // const images = [image1, image2, image3].filter((image) => image);
+
+    //         // const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData.providerImage;
+    //         // const imageUrls = images.length > 0 ? images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`) : existingData.images_details;
+    //         const images = existingData.images_details ? JSON.parse(existingData?.images_details) : [];
+
+    //         if (image1) {
+    //             images[0] = `${req.protocol}://${req.get('host')}/images/${path.basename(image1)}`;
+    //         }
+    //         if (image2) {
+    //             images[1] = `${req.protocol}://${req.get('host')}/images/${path.basename(image2)}`;
+    //         }
+    //         if (image3) {
+    //             images[2] = `${req.protocol}://${req.get('host')}/images/${path.basename(image3)}`;
+    //         }
+    //         const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData?.providerImage;
+
+
+
+    //         const updatedData = {
+    //             name,
+    //             email,
+    //             age,
+    //             DOB,
+    //             phone,
+    //             address,
+    //             documentNumber,
+    //             documentType,
+    //             providerImage: providerImageUrl,
+    //             providerId,
+    //         };
+
+    //         const serviceData = {
+    //             masterId,
+    //             cat_id, 
+    //             sub_cat_id,
+    //             availableTime : JSON.stringify(availableTime),
+    //             newAvailableTime: JSON.stringify(newAvailableTime),
+    //             price,
+    //             description,
+    //             images,
+    //             providerImage: providerImageUrl,
+    //             description,
+    //         };
+    //         ProviderOdditEditService(updatedData, serviceData, (err, result) => {
+    //             if (err) {
+    //                 // console.log('Error: ', err);
+    //                 return res.status(500).json({ message: "Internal Server Error" });
+    //             }
+    //             // console.log('Result: ', result);
+    //             return res.status(200).json({ message: result });
+    //         });
+    //     } catch (error) {
+    //         console.error('Error:', error.message);
+    //         res.status(400).json({ error: error.message });
+    //     }
+    // },
+    
     ProviderOdditEditController: async (req, res) => {
         try {
-
             const {
                 name, email, age, DOB, masterId, cat_id, sub_cat_id,
                 phone, address, availableTime, documentNumber, documentType,
-                price, description, providerId
+                price, description, providerId, newAvailableTime
             } = req.body;
             console.log('req.body: ', req.body);
 
-            if (!name || !email || !age || !DOB || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description || !providerId) {
+            if (!name || !email || !age || !DOB || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !newAvailableTime || !documentNumber || !documentType || !price || !description || !providerId) {
                 return res.status(400).json({ message: "Please provide all the details" });
             }
 
             if (age < 18 || age > 60) {
                 return res.status(400).json({ message: "You are not legally allowed to work with us." });
             }
+
             // Fetch existing provider and service data
             const existingData = await new Promise((resolve, reject) => {
                 getProviderDetails(providerId, (err, result) => {
@@ -123,17 +213,11 @@ module.exports = {
                 });
             });
 
-            // console.log(existingData.providerImage)
-            // console.log(existingData.images_details)
             const providerImage = req.files?.providerImage?.[0]?.path;
             console.log('providerImage: ', providerImage);
             const image1 = req.files?.images1?.[0]?.path;
             const image2 = req.files?.images2?.[0]?.path;
             const image3 = req.files?.images3?.[0]?.path;
-            // const images = [image1, image2, image3].filter((image) => image);
-
-            // const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData.providerImage;
-            // const imageUrls = images.length > 0 ? images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`) : existingData.images_details;
             const images = existingData.images_details ? JSON.parse(existingData?.images_details) : [];
 
             if (image1) {
@@ -146,8 +230,6 @@ module.exports = {
                 images[2] = `${req.protocol}://${req.get('host')}/images/${path.basename(image3)}`;
             }
             const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData?.providerImage;
-
-
 
             const updatedData = {
                 name,
@@ -164,21 +246,21 @@ module.exports = {
 
             const serviceData = {
                 masterId,
-                cat_id, 
+                cat_id,
                 sub_cat_id,
-                availableTime : JSON.stringify(availableTime),
+                availableTime: JSON.stringify(availableTime),
+                newAvailableTime,
                 price,
-                description,
+                description, 
                 images,
                 providerImage: providerImageUrl,
                 description,
             };
+
             ProviderOdditEditService(updatedData, serviceData, (err, result) => {
                 if (err) {
-                    // console.log('Error: ', err);
                     return res.status(500).json({ message: "Internal Server Error" });
                 }
-                // console.log('Result: ', result);
                 return res.status(200).json({ message: result });
             });
         } catch (error) {
@@ -186,6 +268,7 @@ module.exports = {
             res.status(400).json({ error: error.message });
         }
     },
+    
     ProviderOdditFiggureController: (req, res) => {
         const { provider_id } = req.query;
         // console.log(provider_id);
@@ -242,6 +325,20 @@ module.exports = {
             console.error('Error:', error.message);
             res.status(400).json({ error: error.message });
         }
+    },
+    ProviderOdditByIDController: (req, res) => {
+        const { provider_id } = req.query;
+        console.log(provider_id);
+        if (!provider_id) {
+            return res.status(400).json({ message: "provider id is missing:)" })
+        }
+        getProviderByIDService(provider_id, (err, result) => {
+            if (err) { 
+                console.log('err: ', err);
+                res.status(500).json({ message: "Internal Server Error" })
+            }
+            res.status(200).json({ result })
+        });
     }
 
 }
