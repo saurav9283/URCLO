@@ -88,6 +88,7 @@ module.exports = {
 
     saveProvider: async (providerData, serviceData, callback) => {
         try {
+            console.log(JSON.parse(serviceData.availableTime));
             const { name, email, phone, otp } = providerData;
 
             // Send OTP via SMS and Email

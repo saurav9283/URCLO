@@ -69,6 +69,7 @@ module.exports = {
 
         });
     },
+
     // ProviderEndService: (provider_id, scat_id, user_id, callback) => {
     //     const serviceEndTime = moment().format('YYYY-MM-DD HH:mm:ss');
     //     const serviceEndTimeString = serviceEndTime.toString();
@@ -98,6 +99,7 @@ module.exports = {
 
     //     });
     // }
+
     ProviderEndService: (provider_id, scat_id, user_id, callback) => {
         const serviceEndTime = moment().format('YYYY-MM-DD HH:mm:ss');
         const serviceEndTimeString = serviceEndTime.toString();
@@ -148,6 +150,7 @@ module.exports = {
             });
         });
     },
+
     ProviderOdditAllJobsService: (provider_id, callback) => {
         const providerAllJobs = process.env.PROVIDER_ALL_JOBS
             .replace('<providerId>', provider_id);
@@ -308,7 +311,7 @@ module.exports = {
     //             if (!Array.isArray(newTimeSlots)) {
     //                 console.error("Error: newTimeSlots is not an array, initializing as empty array.");
     //                 return callback(new Error("newTimeSlots is not an array")); 
-                    
+
     //              }
 
     //             // Extend available time with new time slots
@@ -350,78 +353,61 @@ module.exports = {
     // },
 
     ProviderOdditEditService: async (providerData, serviceData, callback) => {
-        console.log('serviceData: ', serviceData);
-        const existingAvailableTimeQuery = process.env.GET_PROVIDER_BY_ID
-            .replace('<provider_id>', providerData.providerId);
+        console.log('serviceData: ', serviceData.availableTime);
+        console.log('serviceData: ', serviceData.newAvailableTime);
 
-        pool.query(existingAvailableTimeQuery, [], async (err, providerfreeTime) => {
+        const providerQuery = process.env.UPDATE_PROVIDER_DETAILS
+            .replace('<providerId>', providerData.providerId)
+            .replace('<name>', providerData.name)
+            .replace('<email>', providerData.email)
+            .replace('<age>', providerData.age)
+            .replace('<DOB>', providerData.DOB)
+            .replace('<phone>', providerData.phone)
+            .replace('<address>', providerData.address)
+            .replace('<documentNumber>', providerData.documentNumber)
+            .replace('<documentType>', providerData.documentType);
+        console.log('providerQuery: ', providerQuery);
+        pool.query(providerQuery, (err, result) => {
             if (err) {
-                console.log(err);
-                return callback(err); 
-            }
-            if (providerfreeTime.length === 0) {
-                return callback(null, { message: "No provider found" });
+                console.error("Error updating provider data:", err.message);
+                return callback(err);
             }
 
-            console.log('providerfreeTime: ', providerfreeTime[0].availableTime);
-            const oldTimeSlot = JSON.parse(providerfreeTime[0].availableTime);
-            console.log('oldTimeSlot: ', oldTimeSlot);
+            const updatedAvailableTime = extendAvailableTime(serviceData.availableTime, serviceData.newAvailableTime);
+            console.log('updatedAvailableTime: ', JSON.stringify(updatedAvailableTime)); 
+            const newABLTime = JSON.stringify(updatedAvailableTime);
 
-            const providerQuery = process.env.UPDATE_PROVIDER_DETAILS
-                .replace('<providerId>', providerData.providerId)
-                .replace('<name>', providerData.name)
-                .replace('<email>', providerData.email)
-                .replace('<age>', providerData.age)
-                .replace('<DOB>', providerData.DOB)
-                .replace('<phone>', providerData.phone)
-                .replace('<address>', providerData.address)
-                .replace('<documentNumber>', providerData.documentNumber)
-                .replace('<documentType>', providerData.documentType);
-            console.log('providerQuery: ', providerQuery);
-            pool.query(providerQuery, (err, result) => {
+            const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
+                .replace('<providerId>', providerData.providerId) 
+                .replace('<masterId>', serviceData.masterId)
+                .replace('<cat_id>', serviceData.cat_id)
+                .replace('<sub_cat_id>', serviceData.sub_cat_id)
+                .replace('<availableTime>', newABLTime)
+                .replace('<price>', serviceData.price)
+                .replace('<images_details>', JSON.stringify(serviceData.images))
+                .replace('<description>', serviceData.description)
+                .replace('<providerImage>', serviceData.providerImage);
+            console.log('serviceQuery: ', serviceQuery);
+
+            pool.query(serviceQuery, async (err, result) => {
                 if (err) {
-                    console.error("Error updating provider data:", err.message);
+                    console.error("Error updating service data:", err.message);
                     return callback(err);
                 }
-
-                let newabltime=  JSON.parse(serviceData.newAvailableTime)
-                console.log('newabltime: ', newabltime);
-
-                const updatedAvailableTime = extendAvailableTime(oldTimeSlot, newabltime);
-                console.log('updatedAvailableTime: ', updatedAvailableTime);
-                serviceData.availableTime = JSON.stringify(updatedAvailableTime);
-
-                const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
-                    .replace('<providerId>', providerData.providerId)
-                    .replace('<masterId>', serviceData.masterId)
-                    .replace('<cat_id>', serviceData.cat_id)
-                    .replace('<sub_cat_id>', serviceData.sub_cat_id)
-                    .replace('<availableTime>', serviceData.availableTime)
-                    .replace('<price>', serviceData.price)
-                    .replace('<images_details>', JSON.stringify(serviceData.images))
-                    .replace('<description>', serviceData.description)
-                    .replace('<providerImage>', serviceData.providerImage);
-                console.log('serviceQuery: ', serviceQuery);
-
-                pool.query(serviceQuery, async (err, result) => {
-                    if (err) {
-                        console.error("Error updating service data:", err.message);
-                        return callback(err);
-                    }
-                    if (result.affectedRows > 0) {
-                        const emailPayload = {
-                            from: process.env.MAIL_SENDER_EMAIL,
-                            to: providerData.email,
-                            subject: 'Profile Updated Successfully',
-                            template: 'providerDetailUpdate.ejs',
-                            data: { name: providerData.name },
-                        };
-                        await sendEmail(emailPayload);
-                    }
-                    callback(null, "Data updated successfully.");
-                });
+                if (result.affectedRows > 0) {
+                    const emailPayload = {
+                        from: process.env.MAIL_SENDER_EMAIL,
+                        to: providerData.email,
+                        subject: 'Profile Updated Successfully',
+                        template: 'providerDetailUpdate.ejs',
+                        data: { name: providerData.name },
+                    };
+                    await sendEmail(emailPayload);
+                }
+                callback(null, "Data updated successfully.");
             });
         });
+        // });
     },
 
     ProviderOdditGetFiggureService: (provider_id, callback) => {

@@ -88,209 +88,7 @@ module.exports = {
     //     }
     // },
 
-    // providerRegister: async (req, res) => {
-    //     try {
-    //         const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price,description } = req.body;
-    //         console.log('req.body: ', req.body);
 
-    //         if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price , !description) {
-    //             return res.status(400).json({ message: "All fields are required" });
-    //         }
-
-
-    //         if (age < 18 || age > 60) {
-    //             return res.status(400).json({ message: "You are not Authorised to work with us." });
-    //         }
-
-    //         // Check if email or phone already registered
-    //         const emailExists = await new Promise((resolve, reject) => {
-    //             getProviderByEmail(email, (err, result) => {
-    //                 if (err) reject(err);
-    //                 resolve(result && result.length > 0);
-    //             });
-    //         });
-
-    //         if (emailExists) {
-    //             return res.status(409).json({ message: "Email is already in use" });
-    //         }
-
-    //         const phoneExists = await new Promise((resolve, reject) => {
-    //             getProviderByPhone(phone, (err, result) => {
-    //                 if (err) reject(err);
-    //                 resolve(result && result.length > 0);
-    //             });
-    //         });
-
-    //         if (phoneExists) {
-    //             return res.status(409).json({ message: "Phone number is already in use!" });
-    //         }
-
-    //         let hashedPassword = await bcrypt.hash(password, 10);
-    //         const otp = Math.floor(100000 + Math.random() * 900000);
-    //         console.log('otp: ', otp);
- 
-    //         const providerImage = req.files?.providerImage?.[0]?.path;
-    //         console.log('providerImage: ', providerImage);
-    //         // const images = req.files?.images?.map((file) => file.path);
-    //         const image1 = req.files?.images1?.[0]?.path;
-    //         const image2 = req.files?.images2?.[0]?.path;
-    //         const image3 = req.files?.images3?.[0]?.path;
-    //         const images = [image1, image2, image3].filter((image) => image);
-
-    //         const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
-    //         const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}` );
-    //         console.log('imageUrls: ', imageUrls);
-    //         // const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
-
-    //         if (!providerImage || !images || images.length === 0) {
-    //             return res.status(400).json({ message: "Provider image and service images are required." });
-    //         }
-
-
-    //         // Data for `providers` table
-    //         const providerData = {
-    //             name,
-    //             email,
-    //             age,
-    //             DOB,
-    //             phone,
-    //             address,
-    //             documentNumber,
-    //             documentType,
-    //             password: hashedPassword,
-    //             otp,
-    //             otpExpires: moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss'),
-    //             createdOn: moment().format('YYYY-MM-DD HH:mm:ss'),
-    //             isVerified: 0,
-    //         };
-
-    //         const serviceData = {
-    //             masterId,
-    //             cat_id,
-    //             sub_cat_id,
-    //             availableTime,
-    //             price,
-    //             images: imageUrls,
-    //             providerImage: providerImageUrl,
-    //             description
-    //         };
-
-    //         // Save data
-    //         saveProvider(providerData, serviceData, (err, result) => {
-    //             if (err) {
-    //                 console.log(err);
-    //                 return res.status(500).json({ message: "Internal Server Error" });
-    //             }
-    //             return res.status(201).json({ message: "Registration successful. OTP sent to your email or phone." });
-    //         });
-
-    //     } catch (error) {
-    //         console.error(error.message);
-    //         res.status(400).json({ error: error.message });
-    //     }
-    // },
-    
-    // providerRegister: async (req, res) => {
-    //     try {
-    //         const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price, description } = req.body;
-    //         console.log('req.body: ', req.body);
-
-    //         if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description) {
-    //             return res.status(400).json({ message: "All fields are required" });
-    //         }
-
-    //         if (age < 18 || age > 60) {
-    //             return res.status(400).json({ message: "You are not Authorised to work with us." });
-    //         }
-
-    //         // Check if email or phone already registered
-    //         const emailExists = await new Promise((resolve, reject) => {
-    //             getProviderByEmail(email, (err, result) => {
-    //                 if (err) reject(err);
-    //                 resolve(result && result.length > 0);
-    //             });
-    //         });
-
-    //         if (emailExists) {
-    //             return res.status(409).json({ message: "Email is already in use" });
-    //         }
-
-    //         const phoneExists = await new Promise((resolve, reject) => {
-    //             getProviderByPhone(phone, (err, result) => {
-    //                 if (err) reject(err);
-    //                 resolve(result && result.length > 0);
-    //             });
-    //         });
-
-    //         if (phoneExists) {
-    //             return res.status(409).json({ message: "Phone number is already in use!" });
-    //         }
-
-    //         let hashedPassword = await bcrypt.hash(password, 10);
-    //         const otp = Math.floor(100000 + Math.random() * 900000);
-    //         console.log('otp: ', otp);
-
-    //         const providerImage = req.files?.providerImage?.[0]?.path;
-    //         console.log('providerImage: ', providerImage);
-    //         const image1 = req.files?.images1?.[0]?.path;
-    //         const image2 = req.files?.images2?.[0]?.path;
-    //         const image3 = req.files?.images3?.[0]?.path; 
-    //         const images = [image1, image2, image3].filter((image) => image);
-
-    //         const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
-    //         const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
-    //         console.log('imageUrls: ', imageUrls);
-
-    //         if (!providerImage || !images || images.length === 0) {
-    //             return res.status(400).json({ message: "Provider image and service images are required." });
-    //         } 
-
-    //         // Data for `providers` table
-    //         const providerData = {
-    //             name,
-    //             email,
-    //             age,
-    //             DOB,
-    //             phone,
-    //             address,
-    //             documentNumber,
-    //             documentType,
-    //             password: hashedPassword,
-    //             otp,
-    //             otpExpires: moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss'),
-    //             createdOn: moment().format('YYYY-MM-DD HH:mm:ss'), 
-    //             isVerified: 0 
-    //         };
-
-    //         // Format availableTime for all days of the week
-    //         const formattedAvailableTime = formatAvailableTime(availableTime);
-    //         console.log('formattedAvailableTime: ', formattedAvailableTime);
-
-    //         const serviceData = {
-    //             masterId,
-    //             cat_id,
-    //             sub_cat_id,
-    //             availableTime: JSON.stringify(formattedAvailableTime),
-    //             price,
-    //             images: imageUrls,
-    //             providerImage: providerImageUrl,
-    //             description
-    //         };
-
-    //         // Save data
-    //         saveProvider(providerData, serviceData, (err, result) => {
-    //             if (err) {
-    //                 console.log(err);
-    //                 return res.status(500).json({ message: "Internal Server Error" });
-    //             }
-    //             return res.status(201).json({ message: "Registration successful. OTP sent to your email or phone." });
-    //         });
-
-    //     } catch (error) {
-    //         console.error(error.message);
-    //         res.status(400).json({ error: error.message });
-    //     }
-    // },
     
     providerRegister: async (req, res) => {
         try {
@@ -366,14 +164,16 @@ module.exports = {
 
             const serviceData = {
                 masterId,
-                cat_id,
+                cat_id, 
                 sub_cat_id,
-                availableTime,
-                price,
+                // availableTime: JSON.parse(availableTime),
+                availableTime: JSON.stringify(availableTime), 
+                price, 
                 images: imageUrls,
                 providerImage: providerImageUrl,
                 description
             };
+            console.log('serviceData: ', serviceData);
 
             // Save data
             saveProvider(providerData, serviceData, (err, result) => {

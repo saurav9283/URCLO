@@ -248,7 +248,7 @@ module.exports = {
                 masterId,
                 cat_id,
                 sub_cat_id,
-                availableTime: JSON.stringify(availableTime),
+                availableTime,
                 newAvailableTime,
                 price,
                 description, 
