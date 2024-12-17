@@ -32,14 +32,6 @@ const io = socketIO(server,{
 app.set('io', io);  
 
 
-
-// const corsOptions = {
-//   origin: 'http://localhost:3000', 
-//   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed methods 
-//   allowedHeaders: ['Content-Type', 'Authorization'], 
-//   credentials: true, 
-// };
-
 app.use(cors("*"));
 
 // view engine setup
@@ -96,4 +88,4 @@ server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 })
 
-module.exports = app; 
+module.exports = app;
