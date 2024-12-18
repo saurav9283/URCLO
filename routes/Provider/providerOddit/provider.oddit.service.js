@@ -309,12 +309,13 @@ module.exports = {
         });
     },
 
-    ProviderOdditApprovalService: (provider_id, user_id, AcceptanceStatus, sub_cat_id, callback) => {
+    ProviderOdditApprovalService: (provider_id, user_id, AcceptanceStatus, sub_cat_id,sub_providerId,sub_providerName,sub_providerNumber, callback) => {
         const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
             .replace('<provider_id>', provider_id)
             .replace('<user_id>', user_id)
             .replace('<AcceptanceStatus>', AcceptanceStatus)
-            .replace('<sub_cat_id>', sub_cat_id);
+            .replace('<sub_cat_id>', sub_cat_id)
+            .replace('<sub_providerId>', sub_providerId);
         console.log('providerApprovalQuery: ', providerApprovalQuery);
 
         pool.query(providerApprovalQuery, [], (err, result) => {
@@ -322,6 +323,7 @@ module.exports = {
                 console.log(err);
                 return callback(err);
             }
+            console.log('result: ', result);
             if (result.affectedRows === 0) {
                 return callback(null, { message: "No jobs found" });
             }
@@ -385,7 +387,7 @@ module.exports = {
                                 to: userEmail,
                                 subject: 'Order Accepted - Payment Required',
                                 template: 'orderAccepted.ejs',
-                                data: { userName, paymentLink, amount },
+                                data: { userName, paymentLink, amount, providerName, sub_providerName, sub_providerNumber },
                             };
                             try {
                                 await sendEmail(emailPayload);

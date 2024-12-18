@@ -6,50 +6,50 @@ module.exports = {
         console.log('schedule_time: ', schedule_time);
         try {
             const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
-            const checkIsProviderBusy = process.env.CHECK_IS_PROVIDER_BUSY
+            // const checkIsProviderBusy = process.env.CHECK_IS_PROVIDER_BUSY
+            //     .replace('<provider_id>', provider_id)
+            //     .replace('<schedule_time>', schedule_time)
+            //     .replace('<schedule_date>', schedule_date)
+            //     .replace('<sub_cat_id>', sub_cat_id);
+            // console.log('checkIsProviderBusy: ', checkIsProviderBusy);
+            // Use parameterized query to avoid SQL injection
+            // pool.query(checkIsProviderBusy, (err, result) => {
+            //     if (err) {
+            //         console.log("Error during database query: ", err);
+            //         return callback(err);
+            //     }
+            //     console.log('result: ', result);
+            //     if (result.length > 0) {
+            //         console.log("Provider is busy at this time");
+            //         return callback(null, "Provider is busy at this time");
+            //     }
+            //     else {
+            const create_order = process.env.CREATE_ORDER
+                .replace('<user_id>', user_id)
+                .replace('<sub_cat_id>', sub_cat_id)
                 .replace('<provider_id>', provider_id)
+                .replace('<quantity>', quantity)
+                .replace('<createdon>', currentDateTime)
                 .replace('<schedule_time>', schedule_time)
                 .replace('<schedule_date>', schedule_date)
-                .replace('<sub_cat_id>', sub_cat_id);
-            console.log('checkIsProviderBusy: ', checkIsProviderBusy);
-            // Use parameterized query to avoid SQL injection
-            pool.query(checkIsProviderBusy, (err, result) => {
+                .replace('<IsserviceDone>', 0)
+                .replace('<serviceStartTime>', null)
+                .replace('<serviceEndTime>', null)
+                .replace('<Acceptance_Status>', 0)
+                .replace('<Payment_Status>', 0);
+
+            console.log('create_order: ', create_order);
+
+            pool.query(create_order, (err, result) => {
                 if (err) {
                     console.log("Error during database query: ", err);
                     return callback(err);
                 }
-                console.log('result: ', result);
-                if (result.length > 0) {
-                    console.log("Provider is busy at this time");
-                    return callback(null, "Provider is busy at this time");
-                }
-                else {
-                    const create_order = process.env.CREATE_ORDER
-                        .replace('<user_id>', user_id)
-                        .replace('<sub_cat_id>', sub_cat_id)
-                        .replace('<provider_id>', provider_id)
-                        .replace('<quantity>', quantity)
-                        .replace('<createdon>', currentDateTime)
-                        .replace('<schedule_time>', schedule_time)
-                        .replace('<schedule_date>', schedule_date)
-                        .replace('<IsserviceDone>', 0)
-                        .replace('<serviceStartTime>', null)
-                        .replace('<serviceEndTime>', null)
-                        .replace('<Acceptance_Status>', 0)
-                        .replace('<Payment_Status>', 0);
 
-                    console.log('create_order: ', create_order);
-
-                    pool.query(create_order, (err, result) => {
-                        if (err) {
-                            console.log("Error during database query: ", err);
-                            return callback(err);
-                        }
-
-                        return callback(null, result);
-                    });
-                }
+                return callback(null, result);
             });
+            // }
+            // });
         } catch (error) {
             console.log('Error: ', error);
             return callback(error);

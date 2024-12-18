@@ -195,10 +195,13 @@ module.exports = {
         });
     },
     ProviderOdditApprovalController: (req, res) => {
-        const { provider_id, user_id, AcceptanceStatus, sub_cat_id } = req.body;
+        const { provider_id, user_id, AcceptanceStatus, sub_cat_id,sub_providerId,sub_providerName, sub_providerNumber } = req.body;
         console.log(provider_id, user_id, AcceptanceStatus);
+        if(!provider_id || !user_id || !AcceptanceStatus || !sub_cat_id || !sub_providerId || !sub_providerName || !sub_providerNumber) {
+            return res.status(400).json({ message: "Please provide all the details" });
+        }
         try {
-            ProviderOdditApprovalService(provider_id, user_id, AcceptanceStatus, sub_cat_id, (err, result) => {
+            ProviderOdditApprovalService(provider_id, user_id, AcceptanceStatus, sub_cat_id,sub_providerId,sub_providerName,sub_providerNumber, (err, result) => {
                 if (err) {
                     console.log('err: ', err);
                     res.status(500).json({ message: "Internal Server Error" })

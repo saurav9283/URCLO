@@ -1,7 +1,7 @@
 const pool = require("../../../config/database");
 
 module.exports = {
-    AddSubPRoviderService(provideId,subProoviderName , subProviderAge , subMasterId , subProviderCatId , subProviderSubCatId , callback){
+    AddSubPRoviderService(provideId,subProoviderName , subProviderAge , subMasterId , subProviderCatId , subProviderSubCatId ,sub_providerNumber, callback){
         // '<provideId>', '<sub_Name>', '<sub_Age>','<master_id>','<cat_id>','<sub_cat_id>');
         const create_sub_provider = process.env.CREATE_SUB_PROVIDER
         .replace('<provideId>' ,provideId)
@@ -9,7 +9,8 @@ module.exports = {
         .replace('<sub_Age>',subProviderAge)
         .replace('<master_id>',subMasterId)
         .replace('<cat_id>',subProviderCatId)
-        .replace('<sub_cat_id>',subProviderSubCatId);
+        .replace('<sub_cat_id>',subProviderSubCatId)
+        .replace('<sub_providerNumber>',sub_providerNumber);
 
         pool.query(create_sub_provider, (err, result) => {
             if (err) {

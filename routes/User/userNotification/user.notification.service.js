@@ -2,6 +2,7 @@ const pool = require('../../../config/database');
 const moment = require('moment');
 const { signIn, orderAccepted } = require('../../../lib/web.notification.type');
 
+
 module.exports = {
     // notificationService: async (userId, userName) => {
     //     const signInSMS = signIn.sms.replace('[User Name]', userName);
@@ -187,6 +188,8 @@ module.exports = {
                     resolve(results);
                 });
             });
+            const io = require('../../../app').get('io');
+
             io.emit('provider-order-status', {
                 providerName,
                 message: OrderAcceptance,
