@@ -41,16 +41,16 @@ module.exports = {
 
             console.log('SMS notification logged successfully for provider:', providerId);
             const io = require('../../../app').get('io');
-            io.emit('pushNotification', {
+            io.emit('provider-booked', {
                 user_id,
                 providerId,
                 schedule_time,
                 message: providerSMS,
             });
 
-            console.log('Real-time notification sent to provider:', providerId);
+            console.log('React time provider book:', providerId);
 
-            return { success: true, message: 'Notification sent successfully' };
+            return { success: true, message: 'React time Notification sent successfully' };
         } catch (error) {
             console.error("Provider Notification service error:", error);
             return { message: "Internal Server Error" };

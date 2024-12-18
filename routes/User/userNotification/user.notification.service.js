@@ -37,8 +37,8 @@ module.exports = {
     //         throw error;
     //     }
     // },
-    
-    
+
+
     notificationService: async (userId, userName) => {
         const signInSMS = signIn.sms.replace('[User Name]', userName);
         const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -68,11 +68,11 @@ module.exports = {
                     return resolve(results);
                 });
             });
- 
-            console.log('Notification service success:', payload); 
+
+            console.log('Notification service success:', payload);
             const io = require('../../../app').get('io');
             io.emit('pushNotification', {
-                userName, 
+                userName,
                 message: signInSMS,
             });
 
@@ -135,7 +135,7 @@ module.exports = {
             console.error("Notification service error:", error);
             throw error;
         }
-    }, 
+    },
     getCountNotify: async (user_id, callback) => {
         try {
             if (!user_id) {
@@ -155,39 +155,46 @@ module.exports = {
             throw error;
         }
     },
-    updateOnOrderNotificationService: async (user_id,providerName) => {
-        console.log('user_id,providerName: ', user_id,providerName);
+    updateOnOrderNotificationService: async (user_id, providerName) => {
+        console.log('user_id,providerName: ', user_id, providerName);
         try {
-            
+
             const OrderAcceptance = orderAccepted.sms.replace('[PROVIDER_NAME]', providerName);
             const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
-    
+
             const payload = {
                 user_id,
                 content: OrderAcceptance,
-                content_code: orderAccepted.code, 
+                content_code: orderAccepted.code,
                 type: 'orderAccepted',
                 createdon: currentDateTime,
-            }; 
-    
+            };
+
             const query = process.env.INSERT_ORDER_ACCEPTANCE_SMS
                 .replace('<user_id>', payload.user_id)
                 .replace('<content>', payload.content)
                 .replace('<content_code>', payload.content_code)
                 .replace('<type>', payload.type)
                 .replace('<createdon>', payload.createdon);
-    
+
             // Execute the query
-            const results = await new Promise((resolve, reject) => {
+            await new Promise((resolve, reject) => {
                 pool.query(query, (error, results) => {
                     if (error) {
                         console.error('Error executing query:', error);
                         return reject(error);
                     }
                     resolve(results);
-                }); 
+                });
             });
-            } catch (error) {
+            io.emit('provider-order-status', {
+                providerName,
+                message: OrderAcceptance,
+            });
+
+            console.log("react time notification for user login")
+            return { success: true, message: 'Notification sent successfully' };
+        } catch (error) {
             console.error('Error in updateOnOrderNotificationService:', error);
             throw error;
         }
