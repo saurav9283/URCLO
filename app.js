@@ -10,7 +10,7 @@ const socketIO = require('socket.io');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const bodyParser = require('body-parser');
-  
+const SubProviderRouter = require('./routes/Provider/sub-provider/sub-provider.router.js');
 const UserBuyerRouter = require('./routes/User/userBuyer/user.buyer.router.js');
 const UserRouter = require('./routes/User/userAuth/auth.router.js');
 const UserCartRouter = require('./routes/User/UserCart/user.cart.router.js');
@@ -62,6 +62,7 @@ app.use('/api/checkout/cart' , UserCartRouter);
 app.use('/api', UserNoifyRouter);
 app.use('/api/provider-auth', ProviderRouter);
 app.use('/api/provider', ProviderOdditRouter);
+app.use('/api/sub-provider' , SubProviderRouter)
 app.use('/api/get/mastercat', userMasterCatRouter);
 
 app.get('/api', (req, res) => {
