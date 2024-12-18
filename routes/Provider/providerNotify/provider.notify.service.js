@@ -41,7 +41,7 @@ module.exports = {
 
             console.log('SMS notification logged successfully for provider:', providerId);
             const io = require('../../../app').get('io');
-            io.to(`provider_${providerId}`).emit('pushNotification', {
+            io.emit('pushNotification', {
                 user_id,
                 providerId,
                 schedule_time,
@@ -56,7 +56,6 @@ module.exports = {
             return { message: "Internal Server Error" };
         }
     },
-
 
     providerNotifyStartService: async (provider_id, user_id) => {
         // console.log('provider_id, user_id: ', provider_id, user_id);

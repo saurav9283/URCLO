@@ -11,22 +11,22 @@ module.exports = {
             }
 
             const orderPromises = orders?.map(async (order) => {
-                const { sub_cat_id, provider_id, quantity, schedule_time } = order;
-                console.log('schedule_time: ', schedule_time);
+                const { sub_cat_id, provider_id, quantity, schedule_time,schedule_date } = order;
+                console.log('schedule_time: ', schedule_time,schedule_date);
                 console.log('Processing order:', sub_cat_id, provider_id, quantity);
 
-                if (!sub_cat_id || !provider_id || !quantity) {
+                if (!sub_cat_id || !provider_id || !quantity || !schedule_date || !schedule_time) {
                     return Promise.reject({ message: "Invalid order details", order });
                 }
 
                 try {
                     const result = await new Promise((resolve, reject) => {
-                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity, schedule_time, async (err, result) => {
+                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity, schedule_time,schedule_date, async (err, result) => {
                             if (err) {
                                 console.error("Error processing order:", err);
                                 return reject({ message: "Failed to process order", error: err, order });
                             }
-                            if (result === "No available time found") {
+                            if (result === "Provider is busy at this time") {
                                 console.log("No available time found for order:", order);
                                 return reject({ message: "No available time found", order });
                             }
@@ -60,17 +60,8 @@ module.exports = {
             // Check if the first result is rejected (or any rejection in the results)
             const rejectedResults = results.filter(result => result.status === "rejected");
             if (rejectedResults.length > 0) {
-                const { sub_cat_id, provider_id } = orders[0];  
-                DeletebuyerRecode(user_id, sub_cat_id, provider_id, (err, result) => {
-                    if (err) {
-                        console.error("Error deleting order:", err);
-                        return res.status(500).json({ message: "Internal Server Error during deletion", error: err });
-                    }
-                    return res.status(400).json({
-                        message: "No orders to process",
-                        errors: rejectedResults,
-                    });
-                });
+                const { sub_cat_id, provider_id } = orders[0]; 
+                return  res.status(400).json({ message: "Provider is busy at this time", rejectedResults });
             } else {
                 return res.status(200).json({
                     message: "All services bought successfully",results
@@ -85,7 +76,5 @@ module.exports = {
             return res.status(500).json({ message: "Internal Server Error", error });
         }
     },
-
-
 };
  

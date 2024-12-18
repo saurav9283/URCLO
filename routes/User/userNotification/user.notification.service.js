@@ -85,7 +85,6 @@ module.exports = {
         }
     },
 
-
     getNotifisationForUser: async (email, phone, callback) => {
         try {
             if (!email && !phone) {

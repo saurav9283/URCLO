@@ -32,6 +32,7 @@ module.exports = {
             //     userProvider = 'Google';
             // }
             // Check if user exists by email
+            
             const emailExists = await new Promise((resolve, reject) => {
                 getUserByEmail(email, (err, result) => {
                     if (err) reject(err);
