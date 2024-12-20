@@ -253,11 +253,11 @@ module.exports = {
             }
 
             const updatedAvailableTime = extendAvailableTime(serviceData.availableTime, serviceData.newAvailableTime);
-            console.log('updatedAvailableTime: ', JSON.stringify(updatedAvailableTime)); 
+            console.log('updatedAvailableTime: ', JSON.stringify(updatedAvailableTime));
             const newABLTime = JSON.stringify(updatedAvailableTime);
 
             const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
-                .replace('<providerId>', providerData.providerId) 
+                .replace('<providerId>', providerData.providerId)
                 .replace('<masterId>', serviceData.masterId)
                 .replace('<cat_id>', serviceData.cat_id)
                 .replace('<sub_cat_id>', serviceData.sub_cat_id)
@@ -309,8 +309,9 @@ module.exports = {
         });
     },
 
-    ProviderOdditApprovalService: (provider_id, user_id, AcceptanceStatus, sub_cat_id,sub_providerId,sub_providerName,sub_providerNumber, callback) => {
+    ProviderOdditApprovalService: (Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber, callback) => {
         const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
+            .replace('<Booking_id>', Booking_id)
             .replace('<provider_id>', provider_id)
             .replace('<user_id>', user_id)
             .replace('<AcceptanceStatus>', AcceptanceStatus)
