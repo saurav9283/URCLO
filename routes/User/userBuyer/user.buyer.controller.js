@@ -26,12 +26,6 @@ module.exports = {
                                 console.error("Error processing order:", err);
                                 return reject({ message: "Failed to process order", error: err, order });
                             }
-                            // if (result === "Provider is busy at this time") {
-                            //     console.log("No available time found for order:", order);
-                            //     return reject({ message: "No available time found", order });
-                            // }
-
-                          
                             try {
                                 await providerNotifyService(user_id, provider_id,schedule_time);
                                 return resolve(result);
