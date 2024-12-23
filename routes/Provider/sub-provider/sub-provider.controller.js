@@ -23,12 +23,12 @@ module.exports = {
         }
     },
     GetSubProviderConteroller: async (req, res) => {
-        const {provideId,sub_cat_id } = req.query;
-        if (!sub_cat_id || !provideId) {
+        const {providerId,sub_cat_id } = req.query;
+        if (!sub_cat_id || !providerId) {
             return res.status(400).json({ message: "Please provide sub_cat_id" });
         }
         try {
-            GetSubProviderService(sub_cat_id,provideId, (err, data) => {
+            GetSubProviderService(sub_cat_id,providerId, (err, data) => {
                 if (err) {
                     return res.status(500).json({ message: "Internal Server Error" });
                 }
