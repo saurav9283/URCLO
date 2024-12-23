@@ -2,16 +2,16 @@ const { AddSubPRoviderService, GetSubProviderService } = require("./sub-provider
 
 module.exports = {
     AddSubProviderController: async (req, res) => {
-        const { provideId, subProoviderName, subProviderAge, subMasterId, subProviderCatId, subProviderSubCatId,sub_providerNumber } = req.body;
+        const { providerId, subProoviderName, subProviderAge, subMasterId, subProviderCatId, subProviderSubCatId,sub_providerNumber } = req.body;
         console.log(req.body);
-        if (!provideId || !subProoviderName || !subProviderAge || !subMasterId || !subProviderCatId || !subProviderSubCatId || !sub_providerNumber) {
+        if (!providerId || !subProoviderName || !subProviderAge || !subMasterId || !subProviderCatId || !subProviderSubCatId || !sub_providerNumber) {
             return res.status(400).json({ message: "Please fill all the fields" });
         }
         if (subProviderAge < 18 || subProviderAge > 55) {
             return res.status(400).json({ message: "This age group is not legal to work with us." });
         }
         try {
-            AddSubPRoviderService(provideId, subProoviderName, subProviderAge, subMasterId, subProviderCatId, subProviderSubCatId,sub_providerNumber, (err, data) => {
+            AddSubPRoviderService(providerId, subProoviderName, subProviderAge, subMasterId, subProviderCatId, subProviderSubCatId,sub_providerNumber, (err, data) => {
                 if (err) {
                     return res.status(500).json({ message: "Internal Server Error" });
                 }
