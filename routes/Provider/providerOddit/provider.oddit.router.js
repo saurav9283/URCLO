@@ -9,7 +9,7 @@ router.post('/oddit/start', ProviderStartingController)
 router.post('/oddit/end', ProviderEndController)
 router.get('/oddit/all-job' , ProviderOdditAllJobsController)
 router.get('/oddit/provider-details' , ProviderOdditDetailsController)
-router.post('/oddit/provider-service-details' , ProviderOdditServiceDetailsController)
+router.post('/oddit/provider-service-details' , ProviderOdditServiceDetailsController) // provider service details
 router.put('/oddit/update-job', upload.fields([
     { name: "providerImage", maxCount: 1 },
     { name: "images1", maxCount: 1 },
@@ -21,7 +21,7 @@ router.get('/oddit/provider-figure', ProviderOdditFiggureController)
 router.post('/oddit/job-approval' , ProviderOdditApprovalController)
 router.put('/oddit/update-payment-status', ProviderOdditPaymentStatusController);
 
-router.get('/oddit/get-provider-oddit-details', ProviderOdditByIDController);
+router.get('/oddit/get-provider-oddit-details', ProviderOdditByIDController); // get provider oddit details by id
 
 
 

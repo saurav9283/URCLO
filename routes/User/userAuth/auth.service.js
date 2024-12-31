@@ -25,7 +25,6 @@ module.exports = {
         });
     },
     OtpForLogin: (user, callback) => {
-
         const getuser = process.env.getid_for_phone.replace('<phone>', user.phone);
         console.log('getuser: ', getuser);
         pool.query(getuser, (err, result) => {

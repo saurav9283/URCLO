@@ -8,8 +8,8 @@ const extendAvailableTime = require("../../../lib/extendAvailableTime.js");
 
 module.exports = {
     ProviderOdditLocationService: (city, sub_cat_id, callback) => {
-        const providerService = process.env.PROVIDER_SERVICE.
-            replace('<sub_cat_id>', sub_cat_id);
+        const providerService = process.env.PROVIDER_SERVICE
+            .replace('<sub_cat_id>', sub_cat_id);
         console.log('providerService: ', providerService);
 
         pool.query(providerService, [], (err, result) => {
@@ -24,7 +24,8 @@ module.exports = {
             console.log('providerId: ', providerId);
             const providerDetails = process.env.PROVIDER_DETAILS_ADD
                 .replace('<id>', providerId)
-                .replace('<address>', city);
+                .replace('<address>', city)
+                .replace('<sub_cat_id>', sub_cat_id);
             console.log('providerDetails: ', providerDetails);
             pool.query(providerDetails, [], (err, providerResult) => {
                 if (err) {
@@ -35,12 +36,15 @@ module.exports = {
                     return callback(null, { message: "No provider details found" });
                 }
                 else {
+                    console.log('providerResult: ', providerResult);
                     const response = { ...providerResult[0], ...result[0] };
                     return callback(null, response);
                 }
             });
         });
     },
+
+
     ProviderStartingService: (provider_id, scat_id, user_id, callback) => {
         const serviceStartTime = moment().format('YYYY-MM-DD HH:mm:ss');
         const serviceStartTimeString = serviceStartTime.toString();
@@ -64,8 +68,6 @@ module.exports = {
                 providerNotifyStartService(provider_id, user_id);
                 return callback(null, { message: "Service started" });
             }
-            // else{
-            // }
 
         });
     },
@@ -258,9 +260,6 @@ module.exports = {
 
             const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
                 .replace('<providerId>', providerData.providerId)
-                .replace('<masterId>', serviceData.masterId)
-                .replace('<cat_id>', serviceData.cat_id)
-                .replace('<sub_cat_id>', serviceData.sub_cat_id)
                 .replace('<availableTime>', newABLTime)
                 .replace('<price>', serviceData.price)
                 .replace('<images_details>', JSON.stringify(serviceData.images))
@@ -273,17 +272,66 @@ module.exports = {
                     console.error("Error updating service data:", err.message);
                     return callback(err);
                 }
-                if (result.affectedRows > 0) {
-                    const emailPayload = {
-                        from: process.env.MAIL_SENDER_EMAIL,
-                        to: providerData.email,
-                        subject: 'Profile Updated Successfully',
-                        template: 'providerDetailUpdate.ejs',
-                        data: { name: providerData.name },
-                    };
-                    await sendEmail(emailPayload);
+
+                let subCatIds;
+                try {
+                    subCatIds = JSON.parse(serviceData.sub_cat_id);
+                    subCatIds = subCatIds.map(id => parseInt(id, 10));
+                } catch (error) {
+                    console.error("Error parsing sub_cat_id:", error.message);
+                    return callback(error);
                 }
-                callback(null, "Data updated successfully.");
+
+                const existingSubCatQuery = `
+                    SELECT sub_cat_id FROM tbl_provider_category
+                    WHERE providerId = ? AND sub_cat_id IN (?)
+                `;
+                pool.query(existingSubCatQuery, [providerData.providerId, subCatIds], (err, existingSubCats) => {
+                    if (err) {
+                        console.error("Error fetching existing sub categories:", err.message);
+                        return callback(err);
+                    }
+
+                    const existingSubCatIds = existingSubCats.map(row => row.sub_cat_id);
+                    const newSubCatIds = subCatIds.filter(id => !existingSubCatIds.includes(id));
+
+                    if (newSubCatIds.length > 0) {
+                        const insertSubCatQuery = `
+                            INSERT INTO tbl_provider_category (providerId, masterId, cat_id, sub_cat_id)
+                            VALUES ?
+                        `;
+                        const insertValues = newSubCatIds.map(subCatId => [
+                            providerData.providerId,
+                            serviceData.masterId,
+                            serviceData.cat_id,
+                            subCatId
+                        ]);
+
+                        pool.query(insertSubCatQuery, [insertValues], (err, result) => {
+                            if (err) {
+                                console.error("Error inserting new sub categories:", err.message);
+                                return callback(err);
+                            }
+                            finalizeUpdate();
+                        });
+                    } else {
+                        finalizeUpdate();
+                    }
+                });
+
+                async function finalizeUpdate() {
+                    if (result.affectedRows > 0) {
+                        const emailPayload = {
+                            from: process.env.MAIL_SENDER_EMAIL,
+                            to: providerData.email,
+                            subject: 'Profile Updated Successfully',
+                            template: 'providerDetailUpdate.ejs',
+                            data: { name: providerData.name },
+                        };
+                        await sendEmail(emailPayload);
+                    }
+                    callback(null, "Data updated successfully.");
+                }
             });
         });
         // });
@@ -492,7 +540,8 @@ module.exports = {
     },
 
     getProviderByIDService: (providerId, callback) => {
-        const query = process.env.GET_PROVIDER_DETAILS_BY_ID.replace('<provider_id>', providerId);
+        // GET_PROVIDER_DETAILS_BY_ID
+        const query = process.env.GET_PROVIDER_DETAILS.replace('<providerId>', providerId);
         console.log('query: ', query);
         pool.query(query, [], (err, result) => {
             if (err) {
