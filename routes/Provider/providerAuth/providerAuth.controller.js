@@ -1,5 +1,5 @@
 const { saveResetToken } = require("../../../lib/saveToken");
-const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvider, UpdateOTP, UpdateOTPBy_Number, updateProviderPassword } = require("./providerAuth.service");
+const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvider, UpdateOTP, UpdateOTPBy_Number, updateProviderPassword, deleteProviderDetailsService } = require("./providerAuth.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
@@ -104,6 +104,7 @@ module.exports = {
 
         } catch (error) {
             console.error(error.message);
+            await deleteProviderDetailsService(providerData,serviceData);
             res.status(400).json({ error: error.message });
         }
     },

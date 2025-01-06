@@ -94,6 +94,7 @@ module.exports = {
             return { message: "Internal Server Error" };
         }
     },
+
     providerNotifyEndService: async (provider_id, user_id) => {
         // console.log('provider_id, user_id: ', provider_id, user_id);
         const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -130,6 +131,23 @@ module.exports = {
         } catch (error) {
             console.error("Provider Notification service error:", error);
             return { message: "Internal Server Error" };
+        }
+    },
+
+    getNotificationService: async (providerId, callback) => {
+        try {
+            const query = process.env.GET_PROVIDER_NOTIFICATION.replace('<provider_id>', providerId);
+            console.log('query: ', query);
+            pool.query(query, (error, results) => {
+                if (error) {
+                    console.error('Error:', error);
+                    return callback(error, null);
+                }
+                return callback(null, results);
+            });
+        } catch (error) {
+            console.error("Provider Notification service error:", error);
+            return callback(error, null);
         }
     }
 }

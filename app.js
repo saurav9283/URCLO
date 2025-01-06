@@ -18,6 +18,7 @@ const ProviderRouter = require('./routes/Provider/providerAuth/providerAuth.rout
 const UserNoifyRouter = require('./routes/User/userNotification/user.notification.router.js');
 const userMasterCatRouter = require('./routes/User/userService/user.service.router.js');
 const ProviderOdditRouter = require('./routes/Provider/providerOddit/provider.oddit.router.js');
+const ProviderNotificationRouter = require('./routes/Provider/providerNotify/provider.notify.router.js');
 
 var app = express();
 const server = http.createServer(app);
@@ -61,6 +62,7 @@ app.use('/api/user', UserBuyerRouter);
 app.use('/api/checkout/cart' , UserCartRouter);
 app.use('/api', UserNoifyRouter);
 app.use('/api/provider-auth', ProviderRouter);
+app.use('/api/provider/sms', ProviderNotificationRouter);
 app.use('/api/provider', ProviderOdditRouter);
 app.use('/api/sub-provider' , SubProviderRouter)
 app.use('/api/get/mastercat', userMasterCatRouter);

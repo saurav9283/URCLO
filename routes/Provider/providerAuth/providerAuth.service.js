@@ -92,20 +92,7 @@ module.exports = {
             console.log(JSON.parse(serviceData.availableTime));
             const { name, email, phone, otp } = providerData;
 
-            // Send OTP via SMS and Email
-            if (phone) {
-                await sendSms(phone, `Your OTP for registration is ${otp}`);
-            }
-            if (email) {
-                const emailPayload = {
-                    from: process.env.MAIL_SENDER_EMAIL,
-                    to: email,
-                    subject: 'OTP for Registration',
-                    template: 'emailotp.ejs',
-                    data: { name, otp },
-                };
-                await sendEmail(emailPayload);
-            }
+
 
             // Insert into `providers` table
             const providerQuery = process.env.PROVIDER_DETAILS;
@@ -153,13 +140,62 @@ module.exports = {
                         subCatId,
                     ]);
 
-                    pool.query(categoryQuery, [categoryValues], (err, result) => {
+                    pool.query(categoryQuery, [categoryValues], async (err, result) => {
                         if (err) {
                             console.error("Error saving provider categories:", err.message);
                             return callback(err);
                         }
+                        // Send OTP via SMS and Email
+                        if (phone) {
+                            await sendSms(phone, `Your OTP for registration is ${otp}`);
+                        }
+                        if (email) {
+                            const emailPayload = {
+                                from: process.env.MAIL_SENDER_EMAIL,
+                                to: email,
+                                subject: 'OTP for Registration',
+                                template: 'emailotp.ejs',
+                                data: { name, otp },
+                            };
+                            await sendEmail(emailPayload);
+                        }
                         callback(null, "Data saved successfully.");
                     });
+                });
+            });
+        } catch (error) {
+            console.error("Error:", error.message);
+            callback(error);
+        }
+    },
+
+    deleteProviderDetailsService: async (providerData, serviceData, callback) => {
+        try {
+            const { phone, email } = providerData;
+            let providerId
+            if (phone) {
+                providerId = process.env.GET_PROVIDERID_PHONE.replace('<phone>', phone);
+            }
+            else if (email) {
+                providerId = process.env.GET_PROVIDERID.replace('<email>', email);
+            }
+            pool.query(providerId, (err, result) => {
+                if (err) {
+                    console.error("Error getting provider id:", err);
+                    return callback(err);
+                }
+                const providerId = result[0].id;
+                console.log('RollBack providerId: ', providerId);
+
+                const deleteProvider = process.env.DELETE_PROVIDER.replace('<providerId>', providerId);
+                console.log('deleteProvider: ', deleteProvider);
+
+                pool.query(deleteProvider, (err, result) => {
+                    if (err) {
+                        console.error("Error deleting provider:", err);
+                        return callback(err);
+                    }
+                    return callback(null, result);
                 });
             });
         } catch (error) {
