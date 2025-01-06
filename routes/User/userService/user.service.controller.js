@@ -21,7 +21,8 @@ module.exports = {
         });
     },
     getSubCategoryController: (req, res) => {
-        const {cat_id} = req.query;
+        const {cat_id} = req.params;
+        const numericCatId = cat_id.replace(/\D/g, '');
         getsubcategoryService(cat_id, (err, result) => {
             if (err) {
                 console.log(err);
@@ -29,5 +30,6 @@ module.exports = {
             }
             return res.json(result);
         });
+
     }
 }

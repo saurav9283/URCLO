@@ -95,13 +95,18 @@ module.exports = {
         if (!masterId || !cat_id || !sub_cat_id) {
             return res.status(400).json({ message: "Please provide all the details" });
         }
-        ProviderOdditGetServiceDetailsService(masterId, cat_id, sub_cat_id, (err, result) => {
-            if (err) {
-                console.log('err: ', err);
-                res.status(500).json({ message: "Internal Server Error" })
-            }
-            res.status(200).json({ result })
-        });
+        try {
+            ProviderOdditGetServiceDetailsService(masterId, cat_id, sub_cat_id, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                res.status(200).json({ result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
     },
 
     ProviderOdditEditController: async (req, res) => {

@@ -150,11 +150,27 @@ module.exports = {
             return callback(null, result);
         });
     },
+
     ProviderOdditGetServiceDetailsService: (masterId, cat_id, sub_cat_id, callback) => {
+        console.log('masterId, cat_id, sub_cat_id: ', masterId, cat_id, sub_cat_id);
+        let subCatIds;
+        try {
+            subCatIds = typeof sub_cat_id === 'string' ? JSON.parse(sub_cat_id) : sub_cat_id;
+        } catch (error) {
+            return callback(new Error("sub_cat_id must be a valid JSON array"));
+        }
+
+        // Validate that subCatIds is an array
+        if (!Array.isArray(subCatIds) || subCatIds.length === 0) {
+            return callback(new Error("sub_cat_id must be a non-empty array"));
+        }
+        const subCatIdList = subCatIds.join(',');
+        console.log('subCatIdList: ', subCatIdList);
+
         const providerServiceDetails = process.env.GET_PROVIDER_SERVICE_DETAILS
             .replace('<masterId>', masterId)
             .replace('<cat_id>', cat_id)
-            .replace('<sub_cat_id>', sub_cat_id);
+            .replace('<sub_cat_id>', subCatIdList);
         console.log('providerServiceDetails: ', providerServiceDetails);
 
         pool.query(providerServiceDetails, [], (err, serviceResult) => {
@@ -169,7 +185,7 @@ module.exports = {
 
             const getMasterCategoryNameQuery = `SELECT masterName FROM mastercategory WHERE masterId = ?`;
             const getCategoryNameQuery = `SELECT cat_name FROM tbl_cat WHERE cat_id = ?`;
-            const getSubCategoryNameQuery = `SELECT sub_cat_name FROM tbl_sub_cat WHERE sub_cat_id = ?`;
+            const getSubCategoryNameQuery = `SELECT sub_cat_name FROM tbl_sub_cat WHERE sub_cat_id in (?)`;
 
             pool.query(getMasterCategoryNameQuery, [masterId], (err, masterCategoryResult) => {
                 console.log('masterCategoryResult: ', masterCategoryResult);
@@ -196,7 +212,7 @@ module.exports = {
 
                     const categoryName = categoryResult[0].cat_name;
 
-                    pool.query(getSubCategoryNameQuery, [sub_cat_id], (err, subCategoryResult) => {
+                    pool.query(getSubCategoryNameQuery, [subCatIdList], (err, subCategoryResult) => {
                         if (err) {
                             console.log(err);
                             return callback(err);
@@ -221,6 +237,7 @@ module.exports = {
             });
         });
     },
+    
     getProviderDetails: (providerId, callback) => {
         const query = process.env.GET_PROVIDER_DETAILS_IMages.replace('<providerId>', providerId);
         console.log('query: ', query);
