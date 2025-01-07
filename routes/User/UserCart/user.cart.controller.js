@@ -1,4 +1,4 @@
-const { AddToCartService, RemoveFromCartService, GetCartService } = require("./user.cart.service");
+const { AddToCartService, RemoveFromCartService, GetCartService, DeleteProductFromCartService } = require("./user.cart.service");
 
 module.exports = {
     AddToCartController: async (req, res) => {
@@ -63,5 +63,21 @@ module.exports = {
         //     }
         //     return res.status(200).json({ message: result.length });
         // });
+    },
+    DeleteProductFromCartController: async (req, res) => {
+        const { user_id, cat_id, sub_cat_id } = req.body;
+        console.log('req.body: ', req.body);
+        if (!user_id) {
+            return res.status(400).json({ message: "You are not Login" });
+        }
+        if (!sub_cat_id || !cat_id) {
+            return res.status(400).json({ message: "Please provide all the fields" });
+        }
+        DeleteProductFromCartService(user_id, cat_id, sub_cat_id, (err, result) => {
+            if (err) {
+                return res.status(500).json({ message: "Internal Server Error" });
+            }
+            return res.status(200).json({ message: result });
+        });
     }
 }

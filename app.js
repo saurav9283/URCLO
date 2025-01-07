@@ -55,8 +55,8 @@ io.on('connection', (socket) => {
   });
 });
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// app.use('/', indexRouter);
+// app.use('/users', usersRouter);
 app.use('/api/user-auth', UserRouter);
 app.use('/api/user', UserBuyerRouter);
 app.use('/api/checkout/cart' , UserCartRouter);
@@ -70,6 +70,15 @@ app.use('/api/get/mastercat', userMasterCatRouter);
 app.get('/api', (req, res) => {
   res.send("Api is working fine")
 })
+app.use(express.static(path.join(__dirname, "build")));
+
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
+app.get("/*", function (req, res) {
+  // console.log("HEREEE");
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
