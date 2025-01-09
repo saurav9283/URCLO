@@ -237,7 +237,7 @@ module.exports = {
             });
         });
     },
-    
+
     getProviderDetails: (providerId, callback) => {
         const query = process.env.GET_PROVIDER_DETAILS_IMages.replace('<providerId>', providerId);
         console.log('query: ', query);
@@ -249,6 +249,111 @@ module.exports = {
             return callback(null, result);
         });
     },
+
+    // ProviderOdditEditService: async (providerData, serviceData, callback) => {
+    //     console.log('serviceData: ', serviceData.availableTime);
+    //     console.log('serviceData: ', serviceData.newAvailableTime);
+
+    //     const providerQuery = process.env.UPDATE_PROVIDER_DETAILS
+    //         .replace('<providerId>', providerData.providerId)
+    //         .replace('<name>', providerData.name)
+    //         .replace('<email>', providerData.email)
+    //         .replace('<age>', providerData.age)
+    //         .replace('<DOB>', providerData.DOB)
+    //         .replace('<phone>', providerData.phone)
+    //         .replace('<address>', providerData.address)
+    //         .replace('<documentNumber>', providerData.documentNumber)
+    //         .replace('<documentType>', providerData.documentType);
+    //     console.log('providerQuery: ', providerQuery);
+    //     pool.query(providerQuery, (err, result) => {
+    //         if (err) {
+    //             console.error("Error updating provider data:", err.message);
+    //             return callback(err);
+    //         }
+
+    //         const updatedAvailableTime = extendAvailableTime(serviceData.availableTime, serviceData.newAvailableTime);
+    //         console.log('updatedAvailableTime: ', JSON.stringify(updatedAvailableTime));
+    //         const newABLTime = JSON.stringify(updatedAvailableTime);
+
+    //         const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
+    //             .replace('<providerId>', providerData.providerId)
+    //             .replace('<availableTime>', newABLTime)
+    //             .replace('<price>', serviceData.price)
+    //             .replace('<images_details>', JSON.stringify(serviceData.images))
+    //             .replace('<description>', serviceData.description)
+    //             .replace('<providerImage>', serviceData.providerImage);
+    //         console.log('serviceQuery: ', serviceQuery);
+
+    //         pool.query(serviceQuery, async (err, result) => {
+    //             if (err) {
+    //                 console.error("Error updating service data:", err.message);
+    //                 return callback(err);
+    //             }
+
+    //             let subCatIds;
+    //             try {
+    //                 subCatIds = JSON.parse(serviceData.sub_cat_id);
+    //                 subCatIds = subCatIds.map(id => parseInt(id, 10));
+    //             } catch (error) {
+    //                 console.error("Error parsing sub_cat_id:", error.message);
+    //                 return callback(error);
+    //             }
+
+    //             const existingSubCatQuery = `
+    //                 SELECT sub_cat_id FROM tbl_provider_category
+    //                 WHERE providerId = ? AND sub_cat_id IN (?)
+    //             `;
+    //             pool.query(existingSubCatQuery, [providerData.providerId, subCatIds], (err, existingSubCats) => {
+    //                 if (err) {
+    //                     console.error("Error fetching existing sub categories:", err.message);
+    //                     return callback(err);
+    //                 }
+
+    //                 const existingSubCatIds = existingSubCats.map(row => row.sub_cat_id);
+    //                 const newSubCatIds = subCatIds.filter(id => !existingSubCatIds.includes(id));
+
+    //                 if (newSubCatIds.length > 0) {
+    //                     const insertSubCatQuery = `
+    //                         INSERT INTO tbl_provider_category (providerId, masterId, cat_id, sub_cat_id)
+    //                         VALUES ?
+    //                     `;
+    //                     const insertValues = newSubCatIds.map(subCatId => [
+    //                         providerData.providerId,
+    //                         serviceData.masterId,
+    //                         serviceData.cat_id,
+    //                         subCatId
+    //                     ]);
+
+    //                     pool.query(insertSubCatQuery, [insertValues], (err, result) => {
+    //                         if (err) {
+    //                             console.error("Error inserting new sub categories:", err.message);
+    //                             return callback(err);
+    //                         }
+    //                         finalizeUpdate();
+    //                     });
+    //                 } else {
+    //                     finalizeUpdate();
+    //                 }
+    //             });
+
+    //             async function finalizeUpdate() {
+    //                 if (result.affectedRows > 0) {
+    //                     const emailPayload = {
+    //                         from: process.env.MAIL_SENDER_EMAIL,
+    //                         to: providerData.email,
+    //                         subject: 'Profile Updated Successfully',
+    //                         template: 'providerDetailUpdate.ejs',
+    //                         data: { name: providerData.name },
+    //                     };
+    //                     await sendEmail(emailPayload);
+    //                 }
+    //                 callback(null, "Data updated successfully.");
+    //             }
+    //         });
+    //     });
+    //     // });
+    // },
+
 
     ProviderOdditEditService: async (providerData, serviceData, callback) => {
         console.log('serviceData: ', serviceData.availableTime);
@@ -274,6 +379,7 @@ module.exports = {
             const updatedAvailableTime = extendAvailableTime(serviceData.availableTime, serviceData.newAvailableTime);
             console.log('updatedAvailableTime: ', JSON.stringify(updatedAvailableTime));
             const newABLTime = JSON.stringify(updatedAvailableTime);
+            console.log('newABLTime: ', newABLTime);
 
             const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_DETAILS
                 .replace('<providerId>', providerData.providerId)
@@ -289,69 +395,9 @@ module.exports = {
                     console.error("Error updating service data:", err.message);
                     return callback(err);
                 }
-
-                let subCatIds;
-                try {
-                    subCatIds = JSON.parse(serviceData.sub_cat_id);
-                    subCatIds = subCatIds.map(id => parseInt(id, 10));
-                } catch (error) {
-                    console.error("Error parsing sub_cat_id:", error.message);
-                    return callback(error);
-                }
-
-                const existingSubCatQuery = `
-                    SELECT sub_cat_id FROM tbl_provider_category
-                    WHERE providerId = ? AND sub_cat_id IN (?)
-                `;
-                pool.query(existingSubCatQuery, [providerData.providerId, subCatIds], (err, existingSubCats) => {
-                    if (err) {
-                        console.error("Error fetching existing sub categories:", err.message);
-                        return callback(err);
-                    }
-
-                    const existingSubCatIds = existingSubCats.map(row => row.sub_cat_id);
-                    const newSubCatIds = subCatIds.filter(id => !existingSubCatIds.includes(id));
-
-                    if (newSubCatIds.length > 0) {
-                        const insertSubCatQuery = `
-                            INSERT INTO tbl_provider_category (providerId, masterId, cat_id, sub_cat_id)
-                            VALUES ?
-                        `;
-                        const insertValues = newSubCatIds.map(subCatId => [
-                            providerData.providerId,
-                            serviceData.masterId,
-                            serviceData.cat_id,
-                            subCatId
-                        ]);
-
-                        pool.query(insertSubCatQuery, [insertValues], (err, result) => {
-                            if (err) {
-                                console.error("Error inserting new sub categories:", err.message);
-                                return callback(err);
-                            }
-                            finalizeUpdate();
-                        });
-                    } else {
-                        finalizeUpdate();
-                    }
-                });
-
-                async function finalizeUpdate() {
-                    if (result.affectedRows > 0) {
-                        const emailPayload = {
-                            from: process.env.MAIL_SENDER_EMAIL,
-                            to: providerData.email,
-                            subject: 'Profile Updated Successfully',
-                            template: 'providerDetailUpdate.ejs',
-                            data: { name: providerData.name },
-                        };
-                        await sendEmail(emailPayload);
-                    }
-                    callback(null, "Data updated successfully.");
-                }
+                return callback(null, { message: "Data updated successfully" });
             });
         });
-        // });
     },
 
     ProviderOdditGetFiggureService: (provider_id, callback) => {
@@ -567,5 +613,122 @@ module.exports = {
             }
             return callback(null, result);
         });
+    },
+
+    ProviderOdditGetServiceDetailsEditService: (provider_id, callback) => {
+        try {
+            const query = process.env.GET_PROVIDER_SERVICE_DETAILS_EDIT
+                .replace('<providerId>', provider_id);
+            console.log('query: ', query);
+            pool.query(query, [], (err, result) => {
+                if (err) {
+                    console.log(err);
+                    return callback(err);
+                }
+                return callback(null, result);
+            });
+        } catch (error) {
+
+        }
+    },
+
+    ProviderServiceSubCatListService: (cat_id, callback) => {
+        const query = process.env.GET_SUB_CAT_LIST
+            .replace('<cat_id>', cat_id);
+        console.log('query: ', query);
+        pool.query(query, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+    },
+
+    ProviderAddSubCatService: (providerId, cat_id, sub_cat_id, callback) => {
+        const getmasterId = process.env.PROVIDER_GET_MASTER_ID.replace('<providerId>', providerId);
+        console.log('getmasterId: ', getmasterId);
+
+        pool.query(getmasterId, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            if (result.length === 0) {
+                return callback(null, { message: "No masterId found" });
+            }
+            const masterId = result[0].masterId;
+            console.log('masterId: ', masterId);
+            console.log("type of sub_cat_id", typeof sub_cat_id);
+            const subCatIds = Array.isArray(sub_cat_id) ? sub_cat_id : [sub_cat_id];
+            console.log('subCatIds: ', subCatIds);
+
+            const insertPromises = subCatIds.map(subCat => {
+                return new Promise((resolve, reject) => {
+                    const checkQuery = process.env.CHECK_SUB_CAT_EXISTS
+                        .replace('<providerId>', providerId)
+                        .replace('<masterId>', masterId)
+                        .replace('<cat_id>', cat_id)
+                        .replace('<sub_cat_id>', subCat);
+                    console.log('checkQuery: ', checkQuery);
+                    pool.query(checkQuery, [providerId, masterId, cat_id, subCat], (err, result) => {
+                        if (err) {
+                            console.log(err);
+                            return reject(err);
+                        }
+                        if (result.length > 0) {
+                            return resolve({ message: "Sub-category already exists" });
+                        }
+
+                        const providerAddSubCat = process.env.PROVIDER_ADD_SUB_CAT
+                            .replace('<providerId>', providerId)
+                            .replace('<masterId>', masterId)
+                            .replace('<cat_id>', cat_id)
+                            .replace('<sub_cat_id>', subCat);
+
+                        console.log('providerAddSubCat: ', providerAddSubCat);
+
+                        pool.query(providerAddSubCat, [], (err, result) => {
+                            if (err) {
+                                console.log(err);
+                                return reject(err);
+                            }
+                            if (result.affectedRows === 0) {
+                                return reject(new Error("No jobs found for subcategory"));
+                            }
+                            resolve(result);
+                        });
+                    });
+                });
+            });
+
+            Promise.all(insertPromises)
+                .then(results => {
+                    callback(null, "Subcategories added successfully");
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    callback(error);
+                });
+        });
+    },
+
+    ProviderDeleteSubCatService: (providerId, cat_id, sub_cat_id, callback) => {
+        const deleteQuery = process.env.DELETE_SUB_CAT
+            .replace('<providerId>', providerId)
+            .replace('<cat_id>', cat_id)
+            .replace('<sub_cat_id>', sub_cat_id);
+        console.log('deleteQuery: ', deleteQuery);
+        pool.query(deleteQuery, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            if (result.affectedRows === 0) {
+                return callback(null, { message: "No jobs found" });
+            }
+            return callback(null, "Subcategory deleted successfully");
+        });
     }
+
 }

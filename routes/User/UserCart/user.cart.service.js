@@ -210,9 +210,12 @@ module.exports = {
     },
 
     DeleteProductFromCartService: async (user_id, cat_id, sub_cat_id, callback) => {
+        console.log('user_id, cat_id, sub_cat_id: ', user_id, cat_id, sub_cat_id);
         try {
-            const deleteProductFromCart = process.env.DELETE_PRODUCT_FROM_CART.replace('<user_id>', user_id)
-                .replace('<sub_cat_id>', sub_cat_id).replace('<cat_id>', cat_id);
+            const deleteProductFromCart = process.env.DELETE_PRODUCT_FROM_CART
+                .replace('<user_id>', user_id)
+                .replace('<sub_cat_id>', sub_cat_id)
+                .replace('<cat_id>', cat_id);
             console.log('deleteProductFromCart: ', deleteProductFromCart);
             pool.query(deleteProductFromCart, (err, result) => {
                 if (err) {
@@ -220,10 +223,10 @@ module.exports = {
                     return callback(err);
                 }
                 console.log('result: ', result);
-                if(result.affectedRows === 0) {
+                if (result.affectedRows === 0) {
                     return callback(null, "No item found in cart.");
                 }
-                else if(result.affectedRows > 0) {
+                else if (result.affectedRows > 0) {
                     return callback(null, "Product deleted from cart.");
                 }
             });

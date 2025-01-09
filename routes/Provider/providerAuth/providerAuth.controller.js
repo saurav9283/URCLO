@@ -1,5 +1,5 @@
 const { saveResetToken } = require("../../../lib/saveToken");
-const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvider, UpdateOTP, UpdateOTPBy_Number, updateProviderPassword, deleteProviderDetailsService } = require("./providerAuth.service");
+const { getProviderByEmail, getProviderByPhone, saveProvider, UpdateVerifyProvider, UpdateOTP, UpdateOTPBy_Number, updateProviderPassword, deleteProviderDetailsService, GetServiceNameService } = require("./providerAuth.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
@@ -7,7 +7,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { saveResetTokenProvider } = require("../../../lib/SaveTokenProvider");
 const { sendEmail } = require("../../../services/email-service");
-module.exports = {    
+module.exports = {
     providerRegister: async (req, res) => {
         try {
             const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price, description } = req.body;
@@ -52,7 +52,7 @@ module.exports = {
             console.log('providerImage: ', providerImage);
             const image1 = req.files?.images1?.[0]?.path;
             const image2 = req.files?.images2?.[0]?.path;
-            const image3 = req.files?.images3?.[0]?.path; 
+            const image3 = req.files?.images3?.[0]?.path;
             const images = [image1, image2, image3].filter((image) => image);
 
             const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
@@ -61,7 +61,7 @@ module.exports = {
 
             if (!providerImage || !images || images.length === 0) {
                 return res.status(400).json({ message: "Provider image and service images are required." });
-            } 
+            }
 
             // Data for `providers` table
             const providerData = {
@@ -72,21 +72,21 @@ module.exports = {
                 phone,
                 address,
                 documentNumber,
-                documentType, 
+                documentType,
                 password: hashedPassword,
                 otp,
                 otpExpires: moment().add(1, 'hours').format('YYYY-MM-DD HH:mm:ss'),
-                createdOn: moment().format('YYYY-MM-DD HH:mm:ss'), 
-                isVerified: 0 
+                createdOn: moment().format('YYYY-MM-DD HH:mm:ss'),
+                isVerified: 0
             };
 
             const serviceData = {
                 masterId,
-                cat_id, 
+                cat_id,
                 sub_cat_id,
                 // availableTime: JSON.parse(availableTime),
-                availableTime: JSON.stringify(availableTime), 
-                price, 
+                availableTime: JSON.stringify(availableTime),
+                price,
                 images: imageUrls,
                 providerImage: providerImageUrl,
                 description
@@ -94,17 +94,30 @@ module.exports = {
             console.log('serviceData: ', serviceData);
 
             // Save data
-            saveProvider(providerData, serviceData, (err, result) => {
+            GetServiceNameService(masterId, cat_id, (err, result) => {
                 if (err) {
                     console.log(err);
                     return res.status(500).json({ message: "Internal Server Error" });
                 }
-                return res.status(201).json({ message: "Registration successful. OTP sent to your email or phone." });
+
+                console.log('result: ', result);
+                const masterName = result[0].masterName;
+                const catName = result[0].cat_name;
+
+                saveProvider(providerData, serviceData,masterName,catName, (err, result) => {
+                    if (err) {
+                        console.log(err);
+                        return res.status(500).json({ message: "Internal Server Error" });
+                    }
+
+                    return res.status(201).json({ message: "Registration successful. OTP sent to your email or phone." });
+                });
             });
+
 
         } catch (error) {
             console.error(error.message);
-            await deleteProviderDetailsService(providerData,serviceData);
+            await deleteProviderDetailsService(providerData, serviceData);
             res.status(400).json({ error: error.message });
         }
     },
@@ -228,7 +241,7 @@ module.exports = {
                     if (err) reject(err);
                     resolve(result && result[0]);
                 });
-            }); 
+            });
             if (!provider) {
                 return res.status(404).json({ message: "Email not registered" });
             }
@@ -238,7 +251,7 @@ module.exports = {
             if (!(await bcrypt.compare(password, provider.password))) {
                 return res.status(400).json({ message: "Invalid password" });
             }
-            return res.status(200).json({ message: "Login successful",provider_id:provider.id,name:provider.name, email:provider.email });
+            return res.status(200).json({ message: "Login successful", provider_id: provider.id, name: provider.name, email: provider.email });
         }
         if (phone) {
             const provider = await new Promise((resolve, reject) => {
@@ -256,7 +269,7 @@ module.exports = {
             if (!(await bcrypt.compare(password, provider.password))) {
                 return res.status(400).json({ message: "Invalid password" });
             }
-            return res.status(200).json({ message: "Login successful", provider_id:provider.id,name:provider.name,phone:provider.phone });
+            return res.status(200).json({ message: "Login successful", provider_id: provider.id, name: provider.name, phone: provider.phone });
         }
     },
     providerForgorPassword: async (req, res) => {
@@ -325,10 +338,10 @@ module.exports = {
             return res.status(200).json({ msg: "Password reset successful" });
         } catch (error) {
             console.log('error:=-=- ', error);
-            if(error.message === 'jwt expired') {
+            if (error.message === 'jwt expired') {
                 return res.status(400).json({ msg: "Token expired again try to forget password" });
             }
-            else{
+            else {
                 return res.status(500).json({ msg: error.message });
             }
         }
