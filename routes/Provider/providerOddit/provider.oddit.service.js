@@ -729,6 +729,37 @@ module.exports = {
             }
             return callback(null, "Subcategory deleted successfully");
         });
+    },
+
+    ProviderGetAddCategoryService: (providerId, callback) => {
+        const query = process.env.GET_ADD_CATEGORY
+            .replace(/<provider_id>/g, providerId);
+        console.log('query: ', query);
+        pool.query(query, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+    },
+
+    ProviderDeleteCategoryService: (providerId, cat_id,masterId, callback) => {
+        const deleteQuery = process.env.DELETE_CATEGORY
+            .replace('<providerId>', providerId)
+            .replace('<cat_id>', cat_id)
+            .replace('<masterId>', masterId);
+        console.log('deleteQuery: ', deleteQuery);
+        pool.query(deleteQuery, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            if (result.affectedRows === 0) {
+                return callback(null, { message: "No jobs found" });
+            }
+            return callback(null, "Category deleted successfully");
+        });
     }
 
 }

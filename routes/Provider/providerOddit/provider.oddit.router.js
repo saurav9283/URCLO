@@ -1,5 +1,5 @@
 const express = require('express');
-const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController, ProviderOdditFiggureController, ProviderOdditApprovalController, ProviderOdditPaymentStatusController, ProviderOdditServiceDetailsController, ProviderOdditByIDController, ProviderServiceDetailsEditController, ProviderServiceSubCatListController, ProviderAddSubCatController, ProviderDeleteSubCatController } = require('./provider.oddit.controller');
+const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController, ProviderOdditFiggureController, ProviderOdditApprovalController, ProviderOdditPaymentStatusController, ProviderOdditServiceDetailsController, ProviderOdditByIDController, ProviderServiceDetailsEditController, ProviderServiceSubCatListController, ProviderAddSubCatController, ProviderDeleteSubCatController, ProviderGetAddCategoryController, ProviderDeleteCategoryController } = require('./provider.oddit.controller');
 const upload = require('../../../lib/uploadFunction');
 
 const router = express.Router();
@@ -26,5 +26,7 @@ router.get('/oddit/get-service-detail/edit' , ProviderServiceDetailsEditControll
 router.get('/oddit/getsub-cat-list', ProviderServiceSubCatListController)
 router.post('/oddit/add-sub-cat', ProviderAddSubCatController)
 router.delete('/oddit/delete-sub-cat', ProviderDeleteSubCatController)
+router.get('/oddit/get-add-category', ProviderGetAddCategoryController)
+router.delete('/oddit/delete-category' , ProviderDeleteCategoryController)
 
 module.exports = router;

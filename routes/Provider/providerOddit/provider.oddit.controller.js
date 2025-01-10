@@ -1,4 +1,4 @@
-const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService, getProviderByIDService, ProviderOdditGetServiceDetailsEditService, ProviderServiceSubCatListService, ProviderAddSubCatService, ProviderDeleteSubCatService } = require("./provider.oddit.service");
+const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService, getProviderByIDService, ProviderOdditGetServiceDetailsEditService, ProviderServiceSubCatListService, ProviderAddSubCatService, ProviderDeleteSubCatService, ProviderGetAddCategoryService, ProviderDeleteCategoryService } = require("./provider.oddit.service");
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { type } = require("os");
@@ -436,5 +436,45 @@ module.exports = {
             });
         }
 
+    },
+
+    ProviderGetAddCategoryController: (req, res) => {
+        const { provider_id } = req.query;
+        console.log(provider_id);
+        if (!provider_id) {
+            return res.status(400).json({ message: "Not Login" })
+        }
+        try {
+            ProviderGetAddCategoryService(provider_id, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                res.status(200).json({ result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
+    },
+
+    ProviderDeleteCategoryController: (req, res) => {
+        const { provider_id, cat_id , master_id } = req.query;
+        console.log(provider_id, cat_id);
+        if (!provider_id || !cat_id || !master_id) {
+            return res.status(400).json({ message: "Please provide all the details" });
+        }
+        try {
+            ProviderDeleteCategoryService(provider_id, cat_id,master_id, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                res.status(200).json({ message: result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
     }
 }
