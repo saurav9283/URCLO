@@ -1,5 +1,5 @@
 const express = require('express');
-const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController, ProviderOdditFiggureController, ProviderOdditApprovalController, ProviderOdditPaymentStatusController, ProviderOdditServiceDetailsController, ProviderOdditByIDController, ProviderServiceDetailsEditController, ProviderServiceSubCatListController, ProviderAddSubCatController, ProviderDeleteSubCatController, ProviderGetAddCategoryController, ProviderDeleteCategoryController } = require('./provider.oddit.controller');
+const { ProviderOdditController, ProviderStartingController, ProviderEndController, ProviderOdditAllJobsController, ProviderOdditEditController, ProviderOdditDetailsController, ProviderOdditFiggureController, ProviderOdditApprovalController, ProviderOdditPaymentStatusController, ProviderOdditServiceDetailsController, ProviderOdditByIDController, ProviderServiceDetailsEditController, ProviderServiceSubCatListController, ProviderAddSubCatController, ProviderDeleteSubCatController, ProviderGetAddCategoryController, ProviderDeleteCategoryController, ProviderMaterListController, ProviderCategoryListController, ProviderSubCategoryListController, ProviderOdditGetSubProviderController } = require('./provider.oddit.controller');
 const upload = require('../../../lib/uploadFunction');
 
 const router = express.Router();
@@ -28,5 +28,9 @@ router.post('/oddit/add-sub-cat', ProviderAddSubCatController)
 router.delete('/oddit/delete-sub-cat', ProviderDeleteSubCatController)
 router.get('/oddit/get-add-category', ProviderGetAddCategoryController)
 router.delete('/oddit/delete-category' , ProviderDeleteCategoryController)
+router.get('/oddit-masterlist' , ProviderMaterListController)
+router.get('/oddit-categorylist' , ProviderCategoryListController)
+router.get('/oddit-subcategorylist' , ProviderSubCategoryListController)
+router.get('/oddit/get-sub-provider' , ProviderOdditGetSubProviderController)
 
 module.exports = router;

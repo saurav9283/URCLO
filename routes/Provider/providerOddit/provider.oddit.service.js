@@ -744,7 +744,7 @@ module.exports = {
         });
     },
 
-    ProviderDeleteCategoryService: (providerId, cat_id,masterId, callback) => {
+    ProviderDeleteCategoryService: (providerId, cat_id, masterId, callback) => {
         const deleteQuery = process.env.DELETE_CATEGORY
             .replace('<providerId>', providerId)
             .replace('<cat_id>', cat_id)
@@ -759,6 +759,67 @@ module.exports = {
                 return callback(null, { message: "No jobs found" });
             }
             return callback(null, "Category deleted successfully");
+        });
+    },
+
+    ProviderMaterListService: (providerId, callback) => {
+        console.log('providerId: ', providerId);
+        const getMasterList = process.env.GET_MASTER_LIST
+            .replace('<providerId>', providerId);
+        console.log('getMasterList: ', getMasterList);
+        pool.query(getMasterList, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+    },
+
+    ProviderCategoryListService: (providerId, masterId, callback) => {
+        const getCategory = process.env.GET_CATEGORY
+            .replace('<providerId>', providerId)
+            .replace('<masterId>', masterId);
+        console.log('getCategory: ', getCategory);
+        pool.query(getCategory, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+
+    },
+
+    ProviderSubCategoryListService: (providerId, master_id, cat_id, callback) => {
+        const getSubCategory = process.env.GET_SUB_CATEGORY
+            .replace('<providerId>', providerId)
+            .replace('<masterId>', master_id)
+            .replace('<cat_id>', cat_id);
+        console.log('getSubCategory: ', getSubCategory);
+        pool.query(getSubCategory, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
+    },
+
+    ProviderOdditGetSubProviderService: (providerId, masterId, cat_id, sub_cat_id, callback) => {
+        console.log('providerId, masterId, cat_id, sub_cat_id: ', providerId, masterId, cat_id, sub_cat_id);
+        const getSubProviderQuery = process.env.GET_SUB_PROVIDER_EMPLOYE
+            .replace('<providerId>', providerId)
+            .replace('<masterId>', masterId)
+            .replace('<cat_id>', cat_id)
+            .replace('<sub_cat_id>', sub_cat_id);
+        console.log('getSubProviderQuery: ', getSubProviderQuery);
+        pool.query(getSubProviderQuery, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
         });
     }
 

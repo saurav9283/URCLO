@@ -67,5 +67,18 @@ module.exports = {
             }
             callback(null, result);
         });
+    },
+
+    DeleteSubProviderService(sub_provider_id, callback) {
+        const delete_sub_provider = process.env.DELETE_SUB_PROVIDER
+            .replace('<sub_provider_id>', sub_provider_id);
+        console.log('delete_sub_provider: ', delete_sub_provider);
+        pool.query(delete_sub_provider, (err, result) => {
+            if (err) {
+                console.error("Error deleting sub provider data:", err.message);
+                return callback(err);
+            }
+            callback(null, "Deleted successfully.");
+        });
     }
 }

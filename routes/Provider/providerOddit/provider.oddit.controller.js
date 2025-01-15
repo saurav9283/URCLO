@@ -1,4 +1,4 @@
-const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService, getProviderByIDService, ProviderOdditGetServiceDetailsEditService, ProviderServiceSubCatListService, ProviderAddSubCatService, ProviderDeleteSubCatService, ProviderGetAddCategoryService, ProviderDeleteCategoryService } = require("./provider.oddit.service");
+const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService, getProviderByIDService, ProviderOdditGetServiceDetailsEditService, ProviderServiceSubCatListService, ProviderAddSubCatService, ProviderDeleteSubCatService, ProviderGetAddCategoryService, ProviderDeleteCategoryService, ProviderMaterListService, ProviderCategoryListService, ProviderSubCategoryListService, ProviderOdditGetSubProviderService } = require("./provider.oddit.service");
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { type } = require("os");
@@ -459,18 +459,101 @@ module.exports = {
     },
 
     ProviderDeleteCategoryController: (req, res) => {
-        const { provider_id, cat_id , master_id } = req.query;
+        const { provider_id, cat_id, master_id } = req.query;
         console.log(provider_id, cat_id);
         if (!provider_id || !cat_id || !master_id) {
             return res.status(400).json({ message: "Please provide all the details" });
         }
         try {
-            ProviderDeleteCategoryService(provider_id, cat_id,master_id, (err, result) => {
+            ProviderDeleteCategoryService(provider_id, cat_id, master_id, (err, result) => {
                 if (err) {
                     console.log('err: ', err);
                     res.status(500).json({ message: "Internal Server Error" })
                 }
                 res.status(200).json({ message: result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
+    },
+
+    ProviderMaterListController: (req, res) => {
+        const { provider_id } = req.query;
+        console.log(provider_id);
+        if (!provider_id) {
+            return res.status(400).json({ message: "Please provide provider id" })
+        }
+        try {
+            ProviderMaterListService(provider_id, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                res.status(200).json({ result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
+    },
+
+    ProviderCategoryListController: (req, res) => {
+        const { provider_id, masterId } = req.query;
+        console.log(provider_id, masterId);
+        if (!provider_id || !masterId) {
+            return res.status(400).json({ message: "providerid or masterId is null" })
+        }
+        try {
+            ProviderCategoryListService(provider_id, masterId, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                res.status(200).json({ result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
+    },
+
+    ProviderSubCategoryListController: (req, res) => {
+        const { provider_id, masterId, catId } = req.query;
+        console.log(provider_id, masterId, catId);
+        if (!provider_id || !masterId || !catId) {
+            return res.status(400).json({ message: "providerid or masterId or catId is null" })
+        }
+        try {
+            ProviderSubCategoryListService(provider_id, masterId, catId, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                res.status(200).json({ result })
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
+    },
+
+    ProviderOdditGetSubProviderController: (req, res) => {
+        const { provider_id, masterId, catId, subCatId } = req.query;
+        console.log(provider_id, masterId, catId, subCatId);
+        if (!provider_id || !masterId || !catId || !subCatId) {
+            return res.status(400).json({ message: "Please provide all the details" });
+        }
+        try {
+            ProviderOdditGetSubProviderService(provider_id, masterId, catId, subCatId, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                if (result.length === 0) {
+                    return res.status(400).json({ message: "No sub provider found" })
+                }
+                else { res.status(200).json({ result }) }
             });
         } catch (error) {
             console.error('Error:', error.message);
