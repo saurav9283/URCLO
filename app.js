@@ -2,9 +2,10 @@ require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var http = require('http'); 
+var http = require('http');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var jwt = require('jsonwebtoken');
 var cors = require("cors");
 const socketIO = require('socket.io');
 var indexRouter = require('./routes/index');
@@ -23,14 +24,14 @@ const ProviderNotificationRouter = require('./routes/Provider/providerNotify/pro
 var app = express();
 const server = http.createServer(app);
 
-const io = socketIO(server,{
+const io = socketIO(server, {
   cors: {
-      origin: '*',
-      methods : ['GET','POST'], 
+    origin: '*',
+    methods: ['GET', 'POST'],
   }
 })
- 
-app.set('io', io);  
+
+app.set('io', io);
 
 
 app.use(cors("*"));
@@ -46,12 +47,44 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+io.use((socket, next) => {
+  const token = socket.handshake.query.providerid;
+  // console.log('socket.handshake: ', socket.handshake);
+  console.log(token, "token");
+
+  if (!token) {
+    return next(new Error("Authentication error"));
+  }
+
+    socket.userId = token;
+    next();
+
+
+
+  // jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+  //   if (err) {
+  //     return next(new Error("Authentication error"));
+  //   }
+    
+  //   // Successfully authenticated
+  //   console.log('decoded: ', decoded);
+  //   socket.userId = decoded.provider.id;
+  //   console.log(socket.userId, "id of user");
+  //   next();
+  // });
+});
 
 io.on('connection', (socket) => {
-  console.log('A client connected:', socket.id);
+  console.log('A client connected:', socket.userId);
+  const userId = socket.userId;
+  console.log(userId, "userId");
+
+  // socket.user = userId;
+
+  socket.join(userId.toString());
 
   socket.on('disconnect', () => {
-      console.log('Client disconnected:', socket.id);
+    console.log('Client disconnected:', socket.userId);
   });
 });
 
@@ -59,12 +92,12 @@ io.on('connection', (socket) => {
 // app.use('/users', usersRouter);
 app.use('/api/user-auth', UserRouter);
 app.use('/api/user', UserBuyerRouter);
-app.use('/api/checkout/cart' , UserCartRouter);
+app.use('/api/checkout/cart', UserCartRouter);
 app.use('/api', UserNoifyRouter);
 app.use('/api/provider-auth', ProviderRouter);
 app.use('/api/provider/sms', ProviderNotificationRouter);
 app.use('/api/provider', ProviderOdditRouter);
-app.use('/api/sub-provider' , SubProviderRouter)
+app.use('/api/sub-provider', SubProviderRouter)
 app.use('/api/get/mastercat', userMasterCatRouter);
 
 app.get('/api', (req, res) => {
@@ -81,12 +114,12 @@ app.get("/*", function (req, res) {
 });
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

@@ -27,7 +27,9 @@ module.exports = {
                                 return reject({ message: "Failed to process order", error: err, order });
                             }
                             try {
-                                await providerNotifyService(user_id, provider_id, schedule_time);
+                                const io = require('../../../app').get('io');
+                                // console.log('io: ', io);
+                                await providerNotifyService(io,user_id, provider_id, schedule_time);
                                 return resolve(result);
                             } catch (notifyError) {
                                 console.error("Notification error:", notifyError);

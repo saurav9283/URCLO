@@ -1,12 +1,13 @@
 const pool = require("../../../config/database");
 const moment = require('moment');
 const { appointmentSchedule, serviceStarted, serviceEnded } = require('../../../lib/web.notification.type');
+const { emitSocketEvent } = require("../../../lib/SocketEvent");
 
 
 module.exports = {
     // providerNotifyService : async (user_id,providerId,schedule_time ) => {
 
-    providerNotifyService: async (user_id, providerId, schedule_time) => {
+    providerNotifyService: async (io,user_id, providerId, schedule_time) => {
         // console.log('providerId,user_id: ', providerId,user_id);
         const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
         const providerSMS = appointmentSchedule.schedule.replace('[Date and Time]', schedule_time);
@@ -40,13 +41,19 @@ module.exports = {
             });
 
             console.log('SMS notification logged successfully for provider:', providerId);
-            const io = require('../../../app').get('io');
-            io.emit('provider-booked', {
+            // const io = require('../../../app').get('io');
+            emitSocketEvent(io,providerId, 'provider-booked', {
                 user_id,
                 providerId,
                 schedule_time,
                 message: providerSMS,
-            });
+            })
+            // io.emit('provider-booked', {
+            //     user_id,
+            //     providerId,
+            //     schedule_time,
+            //     message: providerSMS,
+            // });
 
             console.log('React time provider book:', providerId);
 
