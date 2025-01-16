@@ -181,15 +181,12 @@ module.exports = {
 
                     const formattedResponse = result.map(cartRow => {
                         const subCatRow = subCatResult.find(row => row.sub_cat_id === cartRow.sub_cat_id);
-                        // if(subCatRow === undefined) {
-                        //     return callback(null, { message: "No item found in cart." });
-                        // }
                         return {
                             masterId: subCatRow?.masterId,
                             cat_id: subCatRow?.cat_id,
                             sub_cat_id: subCatRow?.sub_cat_id,
                             sub_cat_name: subCatRow?.sub_cat_name,
-                            standard_price: result[0].price,
+                            standard_price: cartRow.price,
                             count: 1,
                             provider_id: cartRow.provider_id,
                             quantity: cartRow.quantity,

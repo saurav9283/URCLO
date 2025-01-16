@@ -66,10 +66,10 @@ module.exports = {
                     console.log("Error fetching user booking details: ", err);
                     return callback(err);
                 }
-                if (result[0].email) {
+                if (result[0]?.email) {
                     return callback(null, result[0].email);
                 }
-                else if (result[0].phone) {
+                else if (result[0]?.phone) {
                     return callback(null, result[0].phone);
                 }
             });
