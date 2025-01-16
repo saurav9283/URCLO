@@ -2,7 +2,7 @@ const pool = require("../../../config/database");
 const moment = require('moment');
 
 module.exports = {
-    UserBuyerService: (user_id, sub_cat_id, provider_id, quantity, schedule_time, schedule_date, callback) => {
+    UserBuyerService: (user_id, sub_cat_id, provider_id, quantity, schedule_time, schedule_date,user_address, callback) => {
         console.log('schedule_time: ', schedule_time);
         try {
             const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -18,7 +18,8 @@ module.exports = {
                 .replace('<serviceStartTime>', null)
                 .replace('<serviceEndTime>', null)
                 .replace('<Acceptance_Status>', 0)
-                .replace('<Payment_Status>', 0);
+                .replace('<Payment_Status>', 0)
+                .replace('<user_address>', user_address);
 
             console.log('create_order: ', create_order);
 

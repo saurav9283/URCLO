@@ -11,17 +11,17 @@ module.exports = {
             }
 
             const orderPromises = orders?.map(async (order) => {
-                const { sub_cat_id, provider_id, quantity, schedule_time, schedule_date } = order;
+                const { sub_cat_id, provider_id, quantity, schedule_time, schedule_date,user_address } = order;
                 console.log('schedule_time: ', schedule_time, schedule_date);
                 console.log('Processing order:', sub_cat_id, provider_id, quantity);
 
-                if (!sub_cat_id || !provider_id || !quantity || !schedule_date || !schedule_time) {
+                if (!sub_cat_id || !provider_id || !quantity || !schedule_date || !schedule_time || !user_address) {
                     return Promise.reject({ message: "Invalid order details", order });
                 }
 
                 try {
                     const result = await new Promise((resolve, reject) => {
-                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity, schedule_time, schedule_date, async (err, result) => {
+                        UserBuyerService(user_id, sub_cat_id, provider_id, quantity, schedule_time, schedule_date,user_address, async (err, result) => {
                             if (err) {
                                 console.error("Error processing order:", err);
                                 return reject({ message: "Failed to process order", error: err, order });
