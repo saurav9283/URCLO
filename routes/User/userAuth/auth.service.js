@@ -1,7 +1,7 @@
 const pool = require('../../../config/database');
 const { sendEmail } = require('../../../services/email-service');
 const moment = require('moment');
-const {sendSms} = require('../../../services/sms-service');
+const { sendSms } = require('../../../services/sms-service');
 module.exports = {
     getUserByEmail: (email, callback) => {
         const query = process.env.CHECKEXISTINGEMAIL.replace('<email>', email);
@@ -279,7 +279,7 @@ module.exports = {
             return callback(null, result);
         });
     },
-    updatePassword : (userId, newPassword) => {
+    updatePassword: (userId, newPassword) => {
         return new Promise((resolve, reject) => {
             console.log('userId: ', userId);
             const GETTid = process.env.GETTid.replace('<id>', userId);
@@ -307,7 +307,7 @@ module.exports = {
             });
         });
     },
-    LogoutService: (userId,type, callback) => {
+    LogoutService: (userId, type, callback) => {
         const query = process.env.LOGOUT.replace('<userId>', userId)
             .replace('<type>', type);
         console.log('query: ', query);
@@ -317,6 +317,56 @@ module.exports = {
                 return callback(err);
             }
             return callback(null, `${type} logged out successfully`);
+        });
+    },
+
+    SaveGoogleUser: (email, callback) => {
+        const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        const name = email.split('@')[0];
+        const getuserid = process.env.GETID.replace('<email>', email).replace('<provider>', 'Google');
+        const checkUserQuery = process.env.CHECKEXISTINGEMAIL_USER.replace('<email>', email).replace('<provider>', 'Google');
+        const query = process.env.SAVEGOOGLEUSER
+            .replace('<email>', email)
+            .replace('<createdon>', currentDateTime)
+            .replace('<isVerified>', 1)
+            .replace('<otp>', 0)
+            .replace('<otpExpires>', currentDateTime)
+            .replace('<provider>', 'Google')
+            .replace('<password>', 0)
+            .replace('<phone>', 0)
+            .replace('<name>', name);
+        console.log('query: ', query);
+
+        // Check if user already exists
+        pool.query(checkUserQuery, (err, result) => {
+            if (err) {
+                console.error("Error checking existing user:", err);
+                return callback(err);
+            }
+
+            if (result.length > 0) {
+                // User already exists
+                const user_id = result[0].id;
+                return callback(null, { message: "User already exists", user_id, name });
+            } else {
+                // Insert new user
+                pool.query(query, (err, result) => {
+                    if (err) {
+                        console.error("Error saving Google user:", err);
+                        return callback(err);
+                    }
+
+                    // Get the last inserted ID
+                    pool.query(getuserid, (err, result) => {
+                        if (err) {
+                            console.error("Error getting user ID:", err);
+                            return callback(err);
+                        }
+                        const user_id = result[0].id;
+                        return callback(null, { message: "Google user saved successfully", user_id, name });
+                    });
+                });
+            }
         });
     }
 

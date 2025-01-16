@@ -1,12 +1,13 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const moment = require('moment');
-const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify, checkRegisteredUserWithPhone, OtpVerifyPhone, OtpForLogin, findTokenInDatabase, updatePassword, findUserById, LogoutService } = require('../userAuth/auth.service');
+const { getUserByEmail, getUserByPhone, saveUser, checkRegisteredUser, OtpVerify, checkRegisteredUserWithPhone, OtpVerifyPhone, OtpForLogin, findTokenInDatabase, updatePassword, findUserById, LogoutService, SaveGoogleUser } = require('../userAuth/auth.service');
 const { sendEmail } = require('../../../services/email-service');
 const jwt = require('jsonwebtoken');
 const { saveResetToken } = require('../../../lib/saveToken');
 const { NotificationController } = require('../userNotification/user.notification.controller');
 const { notificationService } = require('../userNotification/user.notification.service');
+const { name } = require('ejs');
 module.exports = {
     register: async (req, res) => {
         try {
@@ -32,7 +33,7 @@ module.exports = {
             //     userProvider = 'Google';
             // }
             // Check if user exists by email
-            
+
             const emailExists = await new Promise((resolve, reject) => {
                 getUserByEmail(email, (err, result) => {
                     if (err) reject(err);
@@ -316,8 +317,8 @@ module.exports = {
                 }
                 else {
                     await notificationService(user.id, user.name);
-
-                    return res.status(201).json({ msg: "Login successful", user_id: user.id });
+                    const token = jwt.sign({ user_id: user.id, name: user.name }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+                    return res.status(201).json({ msg: "Login successful", user_id: user.id, name: user.name, token: token });
                 }
             }
         } catch (error) {
@@ -412,4 +413,26 @@ module.exports = {
             return res.status(200).json({ msg: "Logout successful" });
         });
     },
+
+    AuthLoginController: async (req, res) => {
+        const { email } = req.body;
+        console.log('email: ', email);
+        if (!email) {
+            return res.status(400).json({ msg: "Email is required" });
+        }
+        try {
+            SaveGoogleUser(email, (err, result) => {
+                if (err) {
+                    console.error("Error saving user:", err);
+                    return res.status(500).json({ msg: "Internal server error" });
+                }
+                const token = jwt.sign({ user_id: result.user_id, name: result.name }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+                return res.status(200).json({ msg: "User saved successfully",token:token,user_id:result.user_id,name:result.name });
+            });
+        } catch (error) {
+            console.error("Unexpected error:", error);
+            return res.status(500).json({ msg: "Internal server error" });
+
+        }
+    }
 };

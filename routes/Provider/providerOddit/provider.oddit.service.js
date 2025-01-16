@@ -7,6 +7,43 @@ const { notificationService, updateOnOrderNotificationService } = require("../..
 const extendAvailableTime = require("../../../lib/extendAvailableTime.js");
 
 module.exports = {
+    // ProviderOdditLocationService: (city, sub_cat_id, callback) => {
+    //     const providerService = process.env.PROVIDER_SERVICE
+    //         .replace('<sub_cat_id>', sub_cat_id);
+    //     console.log('providerService: ', providerService);
+
+    //     pool.query(providerService, [], (err, result) => {
+    //         if (err) {
+    //             console.log(err);
+    //             return callback(err);
+    //         }
+    //         if (result.length === 0) {
+    //             return callback(null, { message: "No providers found" });
+    //         }
+    //         const providerId = result[0]?.providerId;
+    //         console.log('providerId: ', providerId);
+    //         const providerDetails = process.env.PROVIDER_DETAILS_ADD
+    //             .replace('<id>', providerId)
+    //             .replace('<address>', city)
+    //             .replace('<sub_cat_id>', sub_cat_id);
+    //         console.log('providerDetails: ', providerDetails);
+    //         pool.query(providerDetails, [], (err, providerResult) => {
+    //             if (err) {
+    //                 console.log(err);
+    //                 return callback(err);
+    //             }
+    //             if (providerResult.length === 0) {
+    //                 return callback(null, { message: "No provider details found" });
+    //             }
+    //             else {
+    //                 console.log('providerResult: ', providerResult);
+    //                 const response = { ...providerResult[0], ...result[0] };
+    //                 return callback(null, response);
+    //             }
+    //         });
+    //     });
+    // },
+
     ProviderOdditLocationService: (city, sub_cat_id, callback) => {
         const providerService = process.env.PROVIDER_SERVICE
             .replace('<sub_cat_id>', sub_cat_id);
@@ -20,30 +57,47 @@ module.exports = {
             if (result.length === 0) {
                 return callback(null, { message: "No providers found" });
             }
-            const providerId = result[0]?.providerId;
-            console.log('providerId: ', providerId);
-            const providerDetails = process.env.PROVIDER_DETAILS_ADD
-                .replace('<id>', providerId)
-                .replace('<address>', city)
-                .replace('<sub_cat_id>', sub_cat_id);
-            console.log('providerDetails: ', providerDetails);
-            pool.query(providerDetails, [], (err, providerResult) => {
-                if (err) {
-                    console.log(err);
-                    return callback(err);
-                }
-                if (providerResult.length === 0) {
-                    return callback(null, { message: "No provider details found" });
-                }
-                else {
-                    console.log('providerResult: ', providerResult);
-                    const response = { ...providerResult[0], ...result[0] };
-                    return callback(null, response);
-                }
+
+            const providerDetailsPromises = result?.map(provider => {
+                const providerId = provider.providerId;
+                console.log('providerId: ', providerId);
+                const providerDetails = process.env.PROVIDER_DETAILS_ADD
+                    .replace('<id>', providerId)
+                    .replace('<address>', city)
+                    .replace('<sub_cat_id>', sub_cat_id);
+                console.log('providerDetails: ', providerDetails);
+
+                return new Promise((resolve, reject) => {
+                    pool.query(providerDetails, [], (err, providerResult) => {
+                        if (err) {
+                            console.log(err);
+                            return reject(err);
+                        }
+                        if (providerResult.length === 0) {
+                            return resolve(null);
+                        } else {
+                            console.log('providerResult: ', providerResult);
+                            const response = { ...providerResult[0], ...provider };
+                            return resolve(response);
+                        }
+                    });
+                });
             });
+
+            Promise.all(providerDetailsPromises)
+                .then(responses => {
+                    const filteredResponses = responses.filter(response => response !== null);
+                    if (filteredResponses.length === 0) {
+                        return callback(null, { message: "No provider details found" });
+                    }
+                    return callback(null, filteredResponses);
+                })
+                .catch(error => {
+                    console.log(error);
+                    return callback(error);
+                });
         });
     },
-
 
     ProviderStartingService: (provider_id, scat_id, user_id, callback) => {
         const serviceStartTime = moment().format('YYYY-MM-DD HH:mm:ss');

@@ -2,11 +2,11 @@ const pool = require("../../../config/database");
 const moment = require('moment');
 
 module.exports = {
-    AddToCartService: async (user_id, masterId, cat_id, sub_cat_id, quantity, callback) => {
+    AddToCartService: async (user_id, provider_id, masterId, cat_id, sub_cat_id, quantity,price,booking_date, callback) => {
         console.log('user_id, masterId, cat_id, sub_cat_id, quantity: ', user_id, masterId, cat_id, sub_cat_id, quantity);
         try {
             const checkQuantity = process.env.CHECK_QTY_CART.replace('<sub_cat_id>', sub_cat_id)
-                .replace('<user_id>', user_id);
+                .replace('<user_id>', user_id).replace('<provider_id>', provider_id)
             console.log('checkQuantity: ', checkQuantity);
 
             const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -18,14 +18,15 @@ module.exports = {
                 console.log('result: ', result);
                 if (result[0]?.quantity >= 0) {
                     const currentQuantity = result[0].quantity;
-
                     const newQuantity = currentQuantity + 1;
                     const updateQuantity = process.env.UPDATE_QTY_CART
                         .replace('<sub_cat_id>', sub_cat_id)
                         .replace('<user_id>', user_id)
                         .replace('<quantity>', newQuantity)
                         .replace('<masterId>', masterId)
-                        .replace('<cat_id>', cat_id);
+                        .replace('<cat_id>', cat_id)
+                        .replace('<provider_id>', provider_id);
+
                     console.log('updateQuantity: ', updateQuantity);
                     pool.query(updateQuantity, (err, result) => {
                         if (err) {
@@ -37,7 +38,7 @@ module.exports = {
                 } else {
                     const addToCart = process.env.ADD_TO_CART.replace('<user_id>', user_id)
                         .replace('<sub_cat_id>', sub_cat_id).replace('<quantity>', quantity).replace('<masterId>', masterId).replace('<cat_id>', cat_id)
-                        .replace('<createdon>', currentDateTime);
+                        .replace('<createdon>', currentDateTime).replace('<provider_id>', provider_id).replace('<price>', price).replace('<booking_date>', booking_date);
                     console.log('addToCart: ', addToCart);
                     pool.query(addToCart, (err, result) => {
                         if (err) {
@@ -54,10 +55,10 @@ module.exports = {
             callback(error);
         }
     },
-    RemoveFromCartService: async (user_id, masterId, cat_id, sub_cat_id, callback) => {
+    RemoveFromCartService: async (user_id, provider_id, masterId, cat_id, sub_cat_id, callback) => {
         try {
             const checkQuantity = process.env.CHECK_QTY_CART.replace('<sub_cat_id>', sub_cat_id)
-                .replace('<user_id>', user_id);
+                .replace('<user_id>', user_id).replace('<provider_id>', provider_id);
             console.log('checkQuantity: ', checkQuantity);
 
             pool.query(checkQuantity, (err, result) => {
@@ -67,11 +68,11 @@ module.exports = {
                 }
                 // console.log('result:=-=- ', result);
 
-                if (result[0]?.quantity > 0) {
+                if (result[0]?.quantity > 1) {
                     const currentQuantity = result[0].quantity;
                     const newQuantity = currentQuantity - 1;
                     const deleteFromCart = process.env.DELETE_FROM_CART.replace('<sub_cat_id>', sub_cat_id)
-                        .replace('<user_id>', user_id).replace('<quantity>', newQuantity).replace('<masterId>', masterId).replace('<cat_id>', cat_id);
+                        .replace('<user_id>', user_id).replace('<quantity>', newQuantity).replace('<masterId>', masterId).replace('<cat_id>', cat_id).replace('<provider_id>', provider_id);
                     console.log('deleteFromCart: ', deleteFromCart);
                     pool.query(deleteFromCart, (err, result) => {
                         if (err) {
@@ -80,7 +81,20 @@ module.exports = {
                         }
                         return callback(null, "Your item is removed from cart.", newQuantity);
                     });
-                } else {
+                } 
+                else if (result[0]?.quantity === 1) {
+                    const deleteFromCart = process.env.DELETE_FROM_CARTLAST.replace('<sub_cat_id>', sub_cat_id)
+                        .replace('<user_id>', user_id).replace('<quantity>', 0).replace('<masterId>', masterId).replace('<cat_id>', cat_id).replace('<provider_id>', provider_id);
+                    console.log('deleteFromCart: ', deleteFromCart);
+                    pool.query(deleteFromCart, (err, result) => {
+                        if (err) {
+                            console.error("Error while removing from cart +", err.message);
+                            return callback(err);
+                        }
+                        return callback(null, "Your item is removed from cart.", 0);
+                    });
+                }
+                else {
                     return callback(null, "No item found in cart.");
                 }
             });
@@ -146,7 +160,7 @@ module.exports = {
                 const subCatIds = result
                     .filter(row => row.quantity >= 1)
                     .map(row => row.sub_cat_id);
-                console.log('subCatIds:', subCatIds);
+                console.log('subCatIds:=-=-=', subCatIds);
 
                 if (subCatIds.length === 0) {
                     return callback(null, { message: "Your Cart is Empty" });
@@ -163,25 +177,29 @@ module.exports = {
                         return callback(err);
                     }
 
-                    console.log('subCatResult: ', subCatResult);
+                    console.log('subCatResult:=-=-==-= ', subCatResult);
 
-                    // Count occurrences of each sub_cat_id
-                    const subCatCount = subCatIds.reduce((countMap, id) => {
-                        countMap[id] = (countMap[id] || 0) + 1;
-                        return countMap;
-                    }, {});
+                    const formattedResponse = result.map(cartRow => {
+                        const subCatRow = subCatResult.find(row => row.sub_cat_id === cartRow.sub_cat_id);
+                        // if(subCatRow === undefined) {
+                        //     return callback(null, { message: "No item found in cart." });
+                        // }
+                        return {
+                            masterId: subCatRow?.masterId,
+                            cat_id: subCatRow?.cat_id,
+                            sub_cat_id: subCatRow?.sub_cat_id,
+                            sub_cat_name: subCatRow?.sub_cat_name,
+                            standard_price: result[0].price,
+                            count: 1,
+                            provider_id: cartRow.provider_id,
+                            quantity: cartRow.quantity,
+                            booking_date: cartRow.booking_date,
+                        };
+                    });
 
-                    // Format the response
-                    const formattedResponse = subCatResult.map(row => ({
-                        masterId: row.master_id,
-                        cat_id: row.cat_id,
-                        sub_cat_id: row.sub_cat_id,
-                        sub_cat_name: row.sub_cat_name,
-                        standard_price: row.standard_price,
-                        count: subCatCount[row.sub_cat_id] || 0,
-                    }));
+                    console.log('formattedResponse: ', formattedResponse);
 
-                    callback(null, { message: formattedResponse });
+                    callback(null, formattedResponse);
                 });
             });
 

@@ -9,7 +9,8 @@ const {
     login,
     forgotPassword,
     resetPassword,
-    LogoutController
+    LogoutController,
+    AuthLoginController
 } = require('../userAuth/auth.controller');
 const router = express.Router();
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
@@ -113,7 +114,8 @@ router.post('/register', register)
     .post('/login', login) // here from login content
     .post('/password/forgot', forgotPassword)
     .post('/password/reset', resetPassword)
-    .delete('/logout', LogoutController);
+    .delete('/logout', LogoutController)
+    .post('/auth/login', AuthLoginController);
 
 
 

@@ -54,5 +54,28 @@ module.exports = {
             console.log('Error: ', error);
             return callback(error);
         }
+    },
+
+    UserBookingDetailsService: (user_id, callback) => {
+        try {
+            const userBookingDetailsQuery = process.env.USER_BOOKING_DETAILS_QUERY
+                .replace('<user_id>', user_id);
+
+            pool.query(userBookingDetailsQuery, (err, result) => {
+                if (err) {
+                    console.log("Error fetching user booking details: ", err);
+                    return callback(err);
+                }
+                if (result[0].email) {
+                    return callback(null, result[0].email);
+                }
+                else if (result[0].phone) {
+                    return callback(null, result[0].phone);
+                }
+            });
+        } catch (error) {
+            console.log('Error: ', error);
+            return callback(error);
+        }
     }
 }; 
