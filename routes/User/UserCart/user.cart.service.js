@@ -2,7 +2,7 @@ const pool = require("../../../config/database");
 const moment = require('moment');
 
 module.exports = {
-    AddToCartService: async (user_id, provider_id, masterId, cat_id, sub_cat_id, quantity,price,booking_date, callback) => {
+    AddToCartService: async (user_id, provider_id, masterId, cat_id, sub_cat_id, quantity,price,booking_time,schedule_date, callback) => {
         console.log('user_id, masterId, cat_id, sub_cat_id, quantity: ', user_id, masterId, cat_id, sub_cat_id, quantity);
         try {
             const checkQuantity = process.env.CHECK_QTY_CART.replace('<sub_cat_id>', sub_cat_id)
@@ -38,7 +38,7 @@ module.exports = {
                 } else {
                     const addToCart = process.env.ADD_TO_CART.replace('<user_id>', user_id)
                         .replace('<sub_cat_id>', sub_cat_id).replace('<quantity>', quantity).replace('<masterId>', masterId).replace('<cat_id>', cat_id)
-                        .replace('<createdon>', currentDateTime).replace('<provider_id>', provider_id).replace('<price>', price).replace('<booking_date>', booking_date);
+                        .replace('<createdon>', currentDateTime).replace('<provider_id>', provider_id).replace('<price>', price).replace('<booking_time>', booking_time).replace('<schedule_date>', schedule_date);
                     console.log('addToCart: ', addToCart);
                     pool.query(addToCart, (err, result) => {
                         if (err) {
@@ -190,7 +190,8 @@ module.exports = {
                             count: 1,
                             provider_id: cartRow.provider_id,
                             quantity: cartRow.quantity,
-                            booking_date: cartRow.booking_date,
+                            booking_time: cartRow.booking_time,
+                            schedule_date: cartRow.schedule_date,
                         };
                     });
 

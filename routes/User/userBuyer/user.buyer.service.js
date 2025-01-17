@@ -2,10 +2,14 @@ const pool = require("../../../config/database");
 const moment = require('moment');
 
 module.exports = {
-    UserBuyerService: (user_id, sub_cat_id, provider_id, quantity, schedule_time, schedule_date,user_address, callback) => {
+    UserBuyerService: (user_id, sub_cat_id, provider_id, quantity, schedule_time, schedule_date, user_address, callback) => {
         console.log('schedule_time: ', schedule_time);
         try {
             const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ss');
+            const clear_cart = process.env.CLEAR_CART_QUERY
+                .replace('<user_id>', user_id);
+            console.log('clear_cart: ', clear_cart);
+
             const create_order = process.env.CREATE_ORDER
                 .replace('<user_id>', user_id)
                 .replace('<sub_cat_id>', sub_cat_id)
@@ -28,8 +32,19 @@ module.exports = {
                     console.log("Error during database query: ", err);
                     return callback(err);
                 }
+                if (result.affectedRows === 0) {
+                    return callback({ message: "Failed to create order" });
+                }
+                else {
+                    pool.query(clear_cart, (err, deleteresult) => {
+                        if (err) {
+                            console.log("Error during database query: ", err);
+                            return callback(err);
+                        }
+                        return callback(null, result);
+                    })
+                }
 
-                return callback(null, result);
             });
         } catch (error) {
             console.log('Error: ', error);
