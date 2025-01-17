@@ -286,13 +286,13 @@ module.exports = {
         });
     },
     ProviderOdditApprovalController: (req, res) => {
-        const { Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber } = req.body;
+        const { Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber,price} = req.body;
         console.log(provider_id, user_id, AcceptanceStatus, Booking_id);
-        if (!provider_id || !user_id || !AcceptanceStatus || !sub_cat_id || !sub_providerId || !sub_providerName || !sub_providerNumber) {
+        if (!provider_id || !user_id || !AcceptanceStatus || !sub_cat_id || !sub_providerId || !sub_providerName || !sub_providerNumber || !price) {
             return res.status(400).json({ message: "Please provide all the details" });
         }
         try {
-            ProviderOdditApprovalService(Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber, (err, result) => {
+            ProviderOdditApprovalService(Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber,price, (err, result) => {
                 if (err) {
                     console.log('err: ', err);
                     res.status(500).json({ message: "Internal Server Error" })

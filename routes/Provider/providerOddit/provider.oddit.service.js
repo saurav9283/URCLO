@@ -474,7 +474,7 @@ module.exports = {
         });
     },
 
-    ProviderOdditApprovalService: (Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber, callback) => {
+    ProviderOdditApprovalService: (Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber,price, callback) => {
         const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
             .replace('<Booking_id>', Booking_id)
             .replace('<provider_id>', provider_id)
@@ -541,7 +541,7 @@ module.exports = {
                             return callback(null, { message: "Payment is already made" });
                         }
 
-                        const amount = serviceResult[0].quantity * serviceResult[0].standard_price;
+                        const amount = serviceResult[0].quantity * price;
 
                         if (AcceptanceStatus === 1) {
                             // Send email for payment
