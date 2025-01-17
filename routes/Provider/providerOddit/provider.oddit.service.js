@@ -439,9 +439,9 @@ module.exports = {
                 .replace('<providerId>', providerData.providerId)
                 .replace('<availableTime>', newABLTime)
                 .replace('<price>', serviceData.price)
-                .replace('<images_details>', JSON.stringify(serviceData.images))
-                .replace('<description>', serviceData.description)
-                .replace('<providerImage>', serviceData.providerImage);
+            // .replace('<images_details>', JSON.stringify(serviceData.images))
+            // .replace('<description>', serviceData.description)
+            // .replace('<providerImage>', serviceData.providerImage);
             console.log('serviceQuery: ', serviceQuery);
 
             pool.query(serviceQuery, async (err, result) => {
@@ -451,6 +451,23 @@ module.exports = {
                 }
                 return callback(null, { message: "Data updated successfully" });
             });
+        });
+    },
+
+    ProviderOdditEditImagesService: async (serviceData, callback) => {
+        const serviceQuery = process.env.UPDATE_PROVIDER_SERVICE_Images
+            .replace('<providerId>', serviceData.providerId)
+            .replace('<images_details>', JSON.stringify(serviceData.images))
+            .replace('<description>', serviceData.description)
+            .replace('<providerImage>', serviceData.providerImage);
+        console.log('serviceQuery: ', serviceQuery);
+
+        pool.query(serviceQuery, async (err, result) => {
+            if (err) {
+                console.error("Error updating service data:", err.message);
+                return callback(err);
+            }
+            return callback(null, { message: "Data updated successfully" });
         });
     },
 
@@ -474,7 +491,7 @@ module.exports = {
         });
     },
 
-    ProviderOdditApprovalService: (Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber,price, callback) => {
+    ProviderOdditApprovalService: (Booking_id, provider_id, user_id, AcceptanceStatus, sub_cat_id, sub_providerId, sub_providerName, sub_providerNumber, price, callback) => {
         const providerApprovalQuery = process.env.PROVIDER_APPROVAL_QUERY
             .replace('<Booking_id>', Booking_id)
             .replace('<provider_id>', provider_id)
