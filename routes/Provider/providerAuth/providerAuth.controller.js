@@ -56,6 +56,18 @@ module.exports = {
             const doc = req.files?.document?.[0]?.path;
             const images = [image1, image2, image3].filter((image) => image);
 
+            if (!providerImage) {
+                return res.status(400).json({ message: "Provider image is required." });
+            }
+    
+            if (!image1 || !image2 || !image3) {
+                return res.status(400).json({ message: "All service images (images1, images2, images3) are required." });
+            }
+    
+            if (!doc) {
+                return res.status(400).json({ message: "Document is required." });
+            }
+
             const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
             const docUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(doc)}`;
             const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
