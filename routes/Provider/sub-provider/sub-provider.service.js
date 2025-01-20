@@ -80,5 +80,18 @@ module.exports = {
             }
             callback(null, "Deleted successfully.");
         });
+    },
+
+    GetListSubProviderService(provider_id, callback) {
+        const query = process.env.GET_LIST_SUB_PROVIDER
+            .replace('<provider_id>', provider_id);
+        console.log('query: ', query);
+        pool.query(query, (err, result) => {
+            if (err) {
+                console.error("Error fetching sub provider data:", err.message);
+                return callback(err);
+            }
+            callback(null, result);
+        });
     }
 }
