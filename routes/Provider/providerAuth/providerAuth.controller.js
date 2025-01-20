@@ -10,10 +10,10 @@ const { sendEmail } = require("../../../services/email-service");
 module.exports = {
     providerRegister: async (req, res) => {
         try {
-            const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price, description } = req.body;
+            const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price, description,suggestion } = req.body;
             console.log('req.body: ', req.body);
 
-            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description) {
+            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description || !suggestion) {
                 return res.status(400).json({ message: "All fields are required" });
             }
 
@@ -53,9 +53,11 @@ module.exports = {
             const image1 = req.files?.images1?.[0]?.path;
             const image2 = req.files?.images2?.[0]?.path;
             const image3 = req.files?.images3?.[0]?.path;
+            const doc = req.files?.document?.[0]?.path;
             const images = [image1, image2, image3].filter((image) => image);
 
             const providerImageUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}`;
+            const docUrl = `${req.protocol}://${req.get('host')}/images/${path.basename(doc)}`;
             const imageUrls = images.map((image) => `${req.protocol}://${req.get('host')}/images/${path.basename(image)}`);
             console.log('imageUrls: ', imageUrls);
 
@@ -89,7 +91,9 @@ module.exports = {
                 price,
                 images: imageUrls,
                 providerImage: providerImageUrl,
-                description
+                description,
+                suggestion,
+                doc: docUrl,
             };
             console.log('serviceData: ', serviceData);
 

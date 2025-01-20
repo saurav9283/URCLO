@@ -39,8 +39,8 @@ module.exports = {
         });
     },
 
-    saveProvider: async (providerData, serviceData,masterName,catName, callback) => {
-        console.log('providerData, serviceData,masterName,catName,subCatName: ', providerData, serviceData,masterName,catName);
+    saveProvider: async (providerData, serviceData, masterName, catName, callback) => {
+        console.log('providerData, serviceData,masterName,catName,subCatName: ', providerData, serviceData, masterName, catName);
         try {
             console.log(JSON.parse(serviceData.availableTime));
             const { name, email, phone, otp } = providerData;
@@ -69,7 +69,7 @@ module.exports = {
                 const serviceValues = [
                     providerId,
                     serviceData.availableTime, serviceData.price,
-                    JSON.stringify(serviceData.images), serviceData.providerImage, serviceData.description,
+                    JSON.stringify(serviceData.images), serviceData.providerImage, serviceData.description, serviceData.suggestion,serviceData.doc
                 ];
 
                 pool.query(serviceQuery, serviceValues, (err, result) => {

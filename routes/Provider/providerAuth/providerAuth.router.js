@@ -8,6 +8,7 @@ router.post('/register', upload.fields([
       { name: "images1", maxCount: 1 },
       { name: "images2", maxCount: 1 },
       { name: "images3", maxCount: 1 },
+      {name : "document", maxCount: 1}
 ]), providerRegister)
       .post('/email/verify', providerEmailVerify)
       .post('/phone/verify', providerPhoneVerify)

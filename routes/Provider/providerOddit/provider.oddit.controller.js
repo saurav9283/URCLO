@@ -271,7 +271,8 @@ module.exports = {
 
     ProviderOdditEditImagesController: async (req, res) => {
         try {
-            const { providerId,description } = req.body;
+            const { providerId, description } = req.body;
+            console.log('description: ', typeof description);
             console.log('req.body: ', req.body);
             if (!providerId) {
                 return res.status(400).json({ message: "Please provide provider id" });
@@ -282,34 +283,62 @@ module.exports = {
                     resolve(result[0]);
                 });
             });
+            console.log('existingData: ', existingData);
             const providerImage = req.files?.providerImage?.[0]?.path;
             console.log('providerImage: ', providerImage);
             const image1 = req.files?.images1?.[0]?.path;
+            console.log('image1: ', image1);
             const image2 = req.files?.images2?.[0]?.path;
+            console.log('image2: ', image2);
             const image3 = req.files?.images3?.[0]?.path;
-            const images = existingData.images_details ? JSON.parse(existingData?.images_details) : [];
+            console.log('image3: ', image3);
+            let images = existingData.images_details ? JSON.parse(existingData?.images_details) : [];
+            let descriptions = existingData.description ? JSON.parse(existingData?.description) : [];
+            console.log('images: ', images);
+            console.log('descriptions: ', descriptions);
+            console.log('descriptions: ', typeof descriptions);
 
             if (image1) {
                 images[0] = `${req.protocol}://${req.get('host')}/images/${path.basename(image1)}`;
+                descriptions[0] = description[0];
             }
+            else if (images[0]) {
+                delete images[0];
+                delete descriptions[0];
+            }
+
             if (image2) {
                 images[1] = `${req.protocol}://${req.get('host')}/images/${path.basename(image2)}`;
+                descriptions[1] = description[1];
             }
+            else if (images[1]) {
+                // console.log('delete 1st image', images[1]);
+                delete images[1];
+                delete descriptions[1];
+            }
+
             if (image3) {
                 images[2] = `${req.protocol}://${req.get('host')}/images/${path.basename(image3)}`;
+                descriptions[2] = description[2];
             }
+            else if (images[2]) {
+                // console.log('delete 2st image', images[2]);
+                delete images[2];
+                delete descriptions[2];
+            }
+            console.log('descriptions:-=-= ', descriptions);
+
             const providerImageUrl = providerImage ? `${req.protocol}://${req.get('host')}/images/${path.basename(providerImage)}` : existingData?.providerImage;
             console.log('providerImageUrl: ', providerImageUrl);
 
-            // const updatedData = {
-            //     providerImage: providerImageUrl,
-            //     providerId,
-            // };
+            images = images.filter(image => image !== undefined);
+            console.log('images: ', images);
+            descriptions = descriptions.filter(description => description !== undefined);
 
             const serviceData = {
                 providerId,
                 providerImage: providerImageUrl,
-                description,
+                descriptions,
                 images,
             };
 
