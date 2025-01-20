@@ -13,7 +13,7 @@ module.exports = {
             const { name, email, age, DOB, password, masterId, cat_id, sub_cat_id, phone, address, availableTime, documentNumber, documentType, price, description,suggestion } = req.body;
             console.log('req.body: ', req.body);
 
-            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description || !suggestion) {
+            if (!name || !email || !age || !DOB || !password || !masterId || !cat_id || !sub_cat_id || !phone || !address || !availableTime || !documentNumber || !documentType || !price || !description ) {
                 return res.status(400).json({ message: "All fields are required" });
             }
 

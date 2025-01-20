@@ -892,6 +892,19 @@ module.exports = {
             }
             return callback(null, result);
         });
+    },
+
+    ProviderOdditGetAllTransactionsService: (providerId, callback) => {
+        const getTransactionsQuery = process.env.GET_ALL_TRANSACTIONS
+            .replace('<providerId>', providerId);
+        console.log('getTransactionsQuery: ', getTransactionsQuery);
+        pool.query(getTransactionsQuery, [], (err, result) => {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            }
+            return callback(null, result);
+        });
     }
 
 }

@@ -1,4 +1,4 @@
-const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService, getProviderByIDService, ProviderOdditGetServiceDetailsEditService, ProviderServiceSubCatListService, ProviderAddSubCatService, ProviderDeleteSubCatService, ProviderGetAddCategoryService, ProviderDeleteCategoryService, ProviderMaterListService, ProviderCategoryListService, ProviderSubCategoryListService, ProviderOdditGetSubProviderService, ProviderOdditEditImagesService } = require("./provider.oddit.service");
+const { ProviderOdditLocationService, ProviderStartingService, ProviderEndService, ProviderOdditAllJobsService, ProviderOdditGetDetailsService, ProviderOdditEditService, getProviderDetails, ProviderOdditGetFiggureService, ProviderOdditApprovalService, ProviderOdditPaymentStatusService, ProviderOdditGetServiceDetailsService, getProviderByIDService, ProviderOdditGetServiceDetailsEditService, ProviderServiceSubCatListService, ProviderAddSubCatService, ProviderDeleteSubCatService, ProviderGetAddCategoryService, ProviderDeleteCategoryService, ProviderMaterListService, ProviderCategoryListService, ProviderSubCategoryListService, ProviderOdditGetSubProviderService, ProviderOdditEditImagesService, ProviderOdditGetAllTransactionsService } = require("./provider.oddit.service");
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { type } = require("os");
@@ -635,6 +635,29 @@ module.exports = {
                 }
                 if (result.length === 0) {
                     return res.status(400).json({ message: "No sub provider found" })
+                }
+                else { res.status(200).json({ result }) }
+            });
+        } catch (error) {
+            console.error('Error:', error.message);
+            res.status(400).json({ error: error.message });
+        }
+    },
+
+    ProviderOdditGetAllTransactionsController: (req, res) => {
+        const {provider_id} = req.query;
+        console.log(provider_id);
+        if (!provider_id) {
+            return res.status(400).json({ message: "Please provide provider id" })
+        }
+        try {
+            ProviderOdditGetAllTransactionsService(provider_id, (err, result) => {
+                if (err) {
+                    console.log('err: ', err);
+                    res.status(500).json({ message: "Internal Server Error" })
+                }
+                if (result.length === 0) {
+                    return res.status(400).json({ message: "No transaction found" })
                 }
                 else { res.status(200).json({ result }) }
             });
